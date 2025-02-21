@@ -1,23 +1,39 @@
 package org.nott;
 
+import com.palmergames.bukkit.towny.TownyCommandAddonAPI;
+import com.palmergames.bukkit.towny.exceptions.TownyException;
+import com.palmergames.bukkit.towny.object.AddonCommand;
+import com.palmergames.bukkit.towny.object.TownBlockData;
+import com.palmergames.bukkit.towny.object.TownBlockType;
+import com.palmergames.bukkit.towny.object.TownBlockTypeHandler;
+import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.nott.command.ProductCommand;
+import org.nott.model.Configuration;
+import org.nott.model.Message;
+import org.nott.utils.FileUtils;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@Getter
+@Setter
 public final class SimpleTownyProduct extends JavaPlugin {
 
     public static final String VERSION = "0.0.1";
 
     public static Logger logger;
 
-    public static YamlConfiguration CONFIG;
+    public Configuration configuration;
+
+    public Message message;
 
     public static SimpleTownyProduct INSTANCE;
 
@@ -32,7 +48,48 @@ public final class SimpleTownyProduct extends JavaPlugin {
         // Plugin startup logic
         logger = getLogger();
         logger.info("SimpleTownyProduct starting...");
-        this.loadConfig();
+        this.registerServices();
+        this.loadConfiguration();
+        this.registerTownySubCommand();
+        this.registerSpecialTownBlock();
+        logger.info("SimpleTownyProduct started.");
+    }
+
+    private void registerSpecialTownBlock() {
+        Configuration config = this.getConfiguration();
+        config.getBlockTypes().forEach(block -> {
+            if (TownBlockTypeHandler.exists(block.getName())) {
+                logger.info("SimpleTownyProduct: TownBlockType " + block.getName() + " already exists.");
+                return;
+            }
+            TownBlockType customPlot = new TownBlockType(block.getName(), new TownBlockData() {
+                @Override
+                public String getMapKey() {
+                    return block.getMapKey(); // A single character to be shown on the /towny map and /towny map hud
+                }
+                @Override
+                public double getCost() {
+                    return block.getBasePrice();// A cost that will be paid to set the plot type.
+                }
+            });
+            try {
+                TownBlockTypeHandler.registerType(customPlot);
+            } catch (TownyException e) {
+                logger.severe(e.getMessage());
+            }
+        });
+    }
+
+    private void registerTownySubCommand() {
+        // Register Product command
+        TownyCommandAddonAPI.addSubCommand(TownyCommandAddonAPI.CommandType.TOWN, "product", new ProductCommand());
+        AddonCommand myCommand = new AddonCommand(TownyCommandAddonAPI.CommandType.TOWN, "product", new ProductCommand());
+        myCommand.setTabCompletion(0, Arrays.asList("product", "p"));
+        myCommand.setTabCompletion(1, Arrays.asList("gain", "info", "trade"));
+        TownyCommandAddonAPI.addSubCommand(myCommand);
+    }
+
+    private void registerServices() {
         INSTANCE = this;
         MESSAGE_API = BukkitAudiences.create(this);
         SCHEDULER = this.getServer().getScheduler();
@@ -43,24 +100,20 @@ public final class SimpleTownyProduct extends JavaPlugin {
             return;
         }
         ECONOMY = rsp.getProvider();
-        logger.info("SimpleTownyProduct started.");
     }
 
-    public void loadConfig() throws RuntimeException{
-        saveDefaultConfig();
-        YamlConfiguration config = new YamlConfiguration();
-        File configFile = new File(this.getDataFolder() + File.separator + "config.yml");
-        if(!configFile.exists()){
-            saveResource("config.yml",false);
-        }
+    public void loadConfiguration() {
         try {
-            config.load(configFile);
+            this.saveDefaultConfig();
+            this.saveResource("config.yml", false);
+            this.saveResource("language/message_en_US.yml", false);
+            this.saveResource("language/message_zh_CN.yml", false);
+            configuration = new Configuration();
+            configuration.load();
         } catch (Exception e) {
-            logger.log(Level.WARNING, "Error loading config file", e);
+            this.getLogger().log(Level.SEVERE, "Error loading configuration", e);
             throw new RuntimeException(e);
         }
-        CONFIG = config;
-        logger.info("Config loaded.");
     }
 
     @Override
@@ -68,4 +121,5 @@ public final class SimpleTownyProduct extends JavaPlugin {
         // Plugin shutdown logic
         logger.info("SimpleTownyProduct already shut down...");
     }
+
 }

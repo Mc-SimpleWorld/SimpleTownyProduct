@@ -1,0 +1,12 @@
+common_no_permission: "你没有权限这样做。"
+success_claim_new_block: "你成功地声明了一个新的特殊区块，%block_name%。"
+success_sell_block: "你成功地出售了一个特殊区块，%block_name%。"
+fail_balance_claim_block: "你没有足够的余额来声明一个新的特殊区块，需要 %balance%。"
+not_in_town: "你不在一个城镇里。"
+resident_can_not_claim_block: "你不允许声明一个新的特殊区块。"
+resident_can_not_gain: "你不允许获得特殊区块的产品。"
+have_per_town_types: "你已经达到了你的城镇特殊区块类型的限制。"
+have_per_nation_types: "你已经达到了你的国家特殊区块类型的限制。"
+
+
+

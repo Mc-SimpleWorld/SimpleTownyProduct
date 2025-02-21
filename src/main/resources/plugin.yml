@@ -11,13 +11,13 @@ description: A Minecraft Towny Product plugin.
 website: https://simpleworld-server.github.io/
 
 commands:
-  townyproduct:
+  product:
     description: 'SimpleTownyProduct'
     usage: '未知命令'
     aliases: 'stp'
 
 permissions:
-  townyproduct.admin:
+  towny.product.admin:
     default: op
-  townyproduct.player:
+  towny.product.player:
     default: true
