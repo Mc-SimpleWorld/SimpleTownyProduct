@@ -1,0 +1,23 @@
+name: simple-towny-product
+version: '0.0.1'
+main: org.nott.SimpleTownyProduct
+api-version: '1.20'
+prefix: SimpleTownyProduct
+load: STARTUP
+authors: [ Nott ]
+depend: [ Towny, PlaceholderAPI, Vault ]
+soft-depend: []
+description: A Minecraft Towny Product plugin.
+website: https://simpleworld-server.github.io/
+
+commands:
+  townyproduct:
+    description: 'SimpleTownyProduct'
+    usage: '未知命令'
+    aliases: 'stp'
+
+permissions:
+  townyproduct.admin:
+    default: op
+  townyproduct.player:
+    default: true
