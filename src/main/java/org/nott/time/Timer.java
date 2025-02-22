@@ -1,21 +1,79 @@
 package org.nott.time;
 
+import com.palmergames.bukkit.towny.object.Town;
+import lombok.Data;
+import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
+import org.nott.SimpleTownyProduct;
+import org.nott.exception.ConfigWrongException;
+import org.nott.exception.TimeFormatException;
+
+import java.sql.Time;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.PriorityBlockingQueue;
 
-public class Timer {
+@Data
+public class Timer implements Comparable<Timer>{
 
-    public static ConcurrentHashMap<String,Long> townProductTime = new ConcurrentHashMap<>();
+    private String key;
 
-    public static boolean addTownProductTime(String townName, long currentTime) {
-        boolean result = false;
-        townName = townName.toLowerCase();
-        Long lastTime = townProductTime.get(townName);
-        if (lastTime == null || lastTime < currentTime) {
-            townProductTime.put(townName, currentTime);
-            result = true;
+    private long startTime;
+
+    private long endTime;
+
+    public static PriorityBlockingQueue<Timer> timers = new PriorityBlockingQueue<>();
+
+    public static ConcurrentHashMap<String, Timer> timerMap = new ConcurrentHashMap<>();
+
+    public static void run() {
+        while (true){
+            try {
+                Timer frist = timers.peek();
+                if(frist == null){
+                    Thread.sleep(5 * 1000);
+                    continue;
+                }
+                long currentTimeMillis = System.currentTimeMillis();
+                long fristEndTime = frist.getEndTime();
+                if(currentTimeMillis >= fristEndTime){
+                    Timer take = timers.take();
+                    timerMap.remove(take.getKey());
+                }
+            } catch (InterruptedException e) {
+                SimpleTownyProduct.logger.severe("Timer run method interrupted: " + e.getMessage());
+            }
         }
-        return result;
+    }
+
+    public Timer(String key, String coolDown) {
+        this.key = key;
+        this.startTime = System.currentTimeMillis();
+        Long timeVal = 0L;
+        try {
+            timeVal = TimePeriod.fromStringGetVal(coolDown);
+        } catch (ConfigWrongException e) {
+            throw new TimeFormatException(e);
+        }
+        if(timeVal == 0){
+            throw new TimeFormatException("Time period value is 0.");
+        }
+        this.endTime = timeVal + this.startTime;
+    }
+
+    public Timer(String key, long endTime) {
+        this.key = key;
+        this.startTime = System.currentTimeMillis();
+        this.endTime = this.startTime + endTime;
+    }
+
+    public void start() {
+        timers.add(this);
+        timerMap.put(key, this);
     }
 
 
+    @Override
+    public int compareTo(@NotNull Timer o) {
+        return Long.compare(this.endTime, o.endTime);
+    }
 }

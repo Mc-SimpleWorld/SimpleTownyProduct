@@ -11,11 +11,11 @@ per_town_types: 2
 resident_can_gain: true
 resident_can_trade: true
 
-gain_need_stand_in_block: true
+gain_private_need_stand_in_block: false
 # if gain_need_stand_in_block is flase,wheather the player need to stand in the town to doGain the block type
-gain_need_stand_in_town: true
+gain_private_need_stand_in_town: true
 # if gain_need_stand_in_town is flase,wheather the player need to stand in the nation to doGain the block type
-gain_need_stand_in_nation: true
+gain_private_need_stand_in_nation: true
 
 # Need SiegeWar Plugins
 can_be_plundered: true
@@ -26,6 +26,8 @@ have_neutrality_block: true
 
 # Block types
 block_types:
+  # Public block types
+  # All player can gain products from the public block types
   publics:
     - name: '驿站'
       map_key: 'p'
@@ -39,11 +41,13 @@ block_types:
       repel_block_type:
         - '驿站'
       trade_able: false
-      gain_cool_down: '1Hours'
-      trade_cool_down: '1Days'
+      gain_cool_down: '1hour'
+      trade_cool_down: '1day'
       gain_command:
         - '[console]give experience %player% 100'
         - '[console]money grant %player% 100'
+  # Private block types
+  # Only the owner of the town can gain products from the private block types
   privates:
     - name: '钢铁'
       map_key: 'i'
@@ -57,8 +61,8 @@ block_types:
       repel_block_type:
         - 'TNT'
       trade_able: true
-      gain_cool_down: 10hour
-      trade_cool_down: 1day
+      gain_cool_down: '10hour'
+      trade_cool_down: '1day'
       gain_command:
         - '[console]ecoitem give %player% gun 1'
     - name: '魔法'
@@ -73,8 +77,8 @@ block_types:
       repel_block_type:
         - 'TNT'
       trade_able: true
-      gain_cool_down: '10Hours'
-      trade_cool_down: '1Days'
+      gain_cool_down: '10hour'
+      trade_cool_down: '1day'
       gain_command:
         - '[console]ecoitem give %player% tnt 1'
 

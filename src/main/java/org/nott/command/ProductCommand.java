@@ -27,27 +27,31 @@ public class ProductCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
         instance.getLogger().info("Product command executed.");
-        if(args.length == 0){
+        if (args.length == 0) {
             return true;
         }
         String execute = args[0];
         String[] subArgs = CommonUtils.removeFirstElement(args);
-        switch (execute){
-            case "info": parseInfoCommand(commandSender); break;
-            case "gain": parseGainCommand(commandSender, subArgs); break;
+        switch (execute) {
+            case "info":
+                parseInfoCommand(commandSender);
+                break;
+            case "gain":
+                parseGainCommand(commandSender);
+                break;
         }
         return true;
     }
 
-    private void parseGainCommand(CommandSender commandSender, String[] subArgs) {
+    private void parseGainCommand(CommandSender commandSender) {
         Player player = (Player) commandSender;
         Resident resident = TownyAPI.getInstance().getResident(player);
-        if(resident == null){
+        if (resident == null) {
             Messages.sendError(commandSender, "You are not a resident.");
             return;
         }
         Town townOrNull = resident.getTownOrNull();
-        if(townOrNull == null){
+        if (townOrNull == null) {
             Messages.sendError(commandSender, "You are not in a town.");
             return;
         }
@@ -56,13 +60,12 @@ public class ProductCommand implements CommandExecutor {
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
         long count = townBlocks.stream().filter(townBlock -> instance.getConfiguration().getBlockTypes().existBlock(townBlock.getType().getName())
         ).findAny().stream().count();
-        if(count == 0){
+        if (count == 0) {
             Messages.sendError(commandSender, "You don't have any special blocks.");
         }
         // 异步处理地块收获产品逻辑
-        SimpleTownyProduct.SCHEDULER.runTaskAsynchronously(instance, () -> {
-            // do something
-            townBlocks.forEach(townBlock -> {
+        townBlocks.forEach(townBlock -> {
+            SimpleTownyProduct.SCHEDULER.runTaskAsynchronously(instance, () -> {
                 // do something
                 String name = townBlock.getType().getName();
                 if (!instance.getConfiguration().getBlockTypes().existBlock(name)) {

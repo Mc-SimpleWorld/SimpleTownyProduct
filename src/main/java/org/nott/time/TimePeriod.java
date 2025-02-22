@@ -5,10 +5,10 @@ import org.nott.exception.ConfigWrongException;
 public enum TimePeriod {
 
     // 1S = 20 ticks
-    MIN(60 * 20L),
-    HOUR(60 * 60 * 20L),
-    DAY(60 * 60 * 24 * 20L),
-    WEEK(60 * 60 * 24 * 7 * 20L),
+    MIN(60 * 1000L),
+    HOUR(60 * 60 * 1000L),
+    DAY(60 * 60 * 24 * 1000L),
+    WEEK(60 * 60 * 24 * 7 * 1000L),
     ;
 
     private Long tickTime;

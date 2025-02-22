@@ -20,6 +20,7 @@ import org.nott.model.SpecialTownBlock;
 import org.nott.model.abstracts.BaseBlock;
 import org.nott.model.abstracts.PrivateTownBlock;
 import org.nott.model.abstracts.PublicTownBlock;
+import org.nott.time.Timer;
 import org.nott.utils.FileUtils;
 
 import java.io.File;
@@ -58,6 +59,7 @@ public final class SimpleTownyProduct extends JavaPlugin {
         this.registerEvents();
         this.registerTownySubCommand();
         this.registerSpecialTownBlock();
+        SCHEDULER.runTaskAsynchronously(this, Timer::run);
         logger.info("SimpleTownyProduct started.");
     }
 

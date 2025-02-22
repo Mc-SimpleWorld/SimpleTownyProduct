@@ -29,11 +29,11 @@ public class Configuration {
 
     private boolean residentCanTrade;
 
-    private boolean gainNeedStandInBlock;
+    private boolean gainPrivateNeedStandInBlock;
 
-    private boolean gainNeedStandInTown;
+    private boolean gainPrivateNeedStandInTown;
 
-    private boolean gainNeedStandInNation;
+    private boolean gainPrivateNeedStandInNation;
 
     private boolean canBePlundered;
 
