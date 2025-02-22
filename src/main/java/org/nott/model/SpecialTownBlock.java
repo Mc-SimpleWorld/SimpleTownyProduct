@@ -1,6 +1,8 @@
 package org.nott.model;
 
 import lombok.Data;
+import org.nott.model.abstracts.PrivateTownBlock;
+import org.nott.model.abstracts.PublicTownBlock;
 
 import java.util.List;
 
@@ -11,32 +13,12 @@ import java.util.List;
 @Data
 public class SpecialTownBlock {
 
-    private String name;
+    private List<PrivateTownBlock> privates;
 
-    private Integer limitPerTown;
+    private List<PublicTownBlock> publics;
 
-    private String mapKey;
-
-    private Integer sameNationMax;
-
-    private boolean neutrality;
-
-    private Double basePrice;
-
-    private Double baseSellPrice;
-
-    private Integer baseGainNumber;
-
-    private Double townLevelExponent;
-
-    private List<String> repelBlockType;
-
-    private boolean tradeAble;
-
-    private String gainCoolDown;
-
-    private String tradeCoolDown;
-
-    private List<String> gainCommand;
+    public boolean existBlock(String name) {
+        return privates.stream().anyMatch(block -> block.getName().equals(name)) || publics.stream().anyMatch(block -> block.getName().equals(name));
+    }
 
 }

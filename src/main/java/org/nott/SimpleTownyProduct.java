@@ -16,10 +16,15 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.nott.command.ProductCommand;
 import org.nott.model.Configuration;
 import org.nott.model.Message;
+import org.nott.model.SpecialTownBlock;
+import org.nott.model.abstracts.BaseBlock;
+import org.nott.model.abstracts.PrivateTownBlock;
+import org.nott.model.abstracts.PublicTownBlock;
 import org.nott.utils.FileUtils;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,34 +55,45 @@ public final class SimpleTownyProduct extends JavaPlugin {
         logger.info("SimpleTownyProduct starting...");
         this.registerServices();
         this.loadConfiguration();
+        this.registerEvents();
         this.registerTownySubCommand();
         this.registerSpecialTownBlock();
         logger.info("SimpleTownyProduct started.");
     }
 
+    private void registerEvents() {
+        this.getServer().getPluginManager().registerEvents(new org.nott.listener.TownyEventListener(), this);
+    }
+
     private void registerSpecialTownBlock() {
         Configuration config = this.getConfiguration();
-        config.getBlockTypes().forEach(block -> {
-            if (TownBlockTypeHandler.exists(block.getName())) {
-                logger.info("SimpleTownyProduct: TownBlockType " + block.getName() + " already exists.");
-                return;
+        SpecialTownBlock blockTypes = config.getBlockTypes();
+        List<PrivateTownBlock> privates = blockTypes.getPrivates();
+        List<PublicTownBlock> publics = blockTypes.getPublics();
+        privates.forEach(SimpleTownyProduct::registerSubTownyBlockType);
+        publics.forEach(SimpleTownyProduct::registerSubTownyBlockType);
+    }
+
+    private static void registerSubTownyBlockType(BaseBlock block) {
+        if (TownBlockTypeHandler.exists(block.getName())) {
+            logger.info("SimpleTownyProduct: TownBlockType " + block.getName() + " already exists.");
+            return;
+        }
+        TownBlockType customPlot = new TownBlockType(block.getName(), new TownBlockData() {
+            @Override
+            public String getMapKey() {
+                return block.getMapKey(); // A single character to be shown on the /towny map and /towny map hud
             }
-            TownBlockType customPlot = new TownBlockType(block.getName(), new TownBlockData() {
-                @Override
-                public String getMapKey() {
-                    return block.getMapKey(); // A single character to be shown on the /towny map and /towny map hud
-                }
-                @Override
-                public double getCost() {
-                    return block.getBasePrice();// A cost that will be paid to set the plot type.
-                }
-            });
-            try {
-                TownBlockTypeHandler.registerType(customPlot);
-            } catch (TownyException e) {
-                logger.severe(e.getMessage());
+            @Override
+            public double getCost() {
+                return block.getBasePrice();// A cost that will be paid to set the plot type.
             }
         });
+        try {
+            TownBlockTypeHandler.registerType(customPlot);
+        } catch (TownyException e) {
+            logger.severe(e.getMessage());
+        }
     }
 
     private void registerTownySubCommand() {
@@ -85,7 +101,7 @@ public final class SimpleTownyProduct extends JavaPlugin {
         TownyCommandAddonAPI.addSubCommand(TownyCommandAddonAPI.CommandType.TOWN, "product", new ProductCommand());
         AddonCommand myCommand = new AddonCommand(TownyCommandAddonAPI.CommandType.TOWN, "product", new ProductCommand());
         myCommand.setTabCompletion(0, Arrays.asList("product", "p"));
-        myCommand.setTabCompletion(1, Arrays.asList("gain", "info", "trade"));
+        myCommand.setTabCompletion(1, Arrays.asList("doGain", "info", "trade"));
         TownyCommandAddonAPI.addSubCommand(myCommand);
     }
 
@@ -110,6 +126,8 @@ public final class SimpleTownyProduct extends JavaPlugin {
             this.saveResource("language/message_zh_CN.yml", false);
             configuration = new Configuration();
             configuration.load();
+            message = new Message();
+            message.load();
         } catch (Exception e) {
             this.getLogger().log(Level.SEVERE, "Error loading configuration", e);
             throw new RuntimeException(e);

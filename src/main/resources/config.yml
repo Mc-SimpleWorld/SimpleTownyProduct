@@ -1,7 +1,7 @@
 # Config version: 0.0.1
 ## Productive configuration
 version: 0.0.1
-
+prefix: '&7[&6TownProduct&7] &r'
 locale: 'en_US'
 
 # Block types configuration
@@ -12,68 +12,71 @@ resident_can_gain: true
 resident_can_trade: true
 
 gain_need_stand_in_block: true
-# if gain_need_stand_in_block is flase,wheather the player need to stand in the town to gain the block type
+# if gain_need_stand_in_block is flase,wheather the player need to stand in the town to doGain the block type
 gain_need_stand_in_town: true
-# if gain_need_stand_in_town is flase,wheather the player need to stand in the nation to gain the block type
+# if gain_need_stand_in_town is flase,wheather the player need to stand in the nation to doGain the block type
 gain_need_stand_in_nation: true
 
 # Need SiegeWar Plugins
 can_be_plundered: true
-# if can_be_plundered is true, how many block types gain times can be plundered in next.
+# if can_be_plundered is true, how many block types doGain times can be plundered in next.
 plunder_gain_times: 1
 
 have_neutrality_block: true
 
 # Block types
 block_types:
-  - name: '钢铁'
-    map_key: 'i'
-    neutrality: false
-    limit_per_town: 1
-    same_nation_max: 1
-    base_price: 1000
-    base_sell_price: 500
-    base_gain_number: 100
-    town_level_exponent: 0.3
-    repel_block_type:
-      - 'TNT'
-    trade_able: true
-    gain_cool_down: '10Hours'
-    trade_cool_down: '1Day'
-    gain_command:
-      - '[console]ecoitem give %player% gun 1'
-  - name: '魔法'
-    map_key: 'm'
-    limit_per_town: 1
-    same_nation_max: 2
-    neutrality: false
-    base_price: 1000
-    base_sell_price: 500
-    base_gain_number: 100
-    town_level_exponent: 0.3
-    repel_block_type:
-      - 'TNT'
-    trade_able: true
-    gain_cool_down: '10Hours'
-    trade_cool_down: '1Days'
-    gain_command:
-      - '[console]ecoitem give %player% tnt 1'
-  - name: '驿站'
-    map_key: 'p'
-    limit_per_town: 1
-    same_nation_max: 2
-    neutrality: true
-    base_price: 1000
-    base_sell_price: 500
-    base_gain_number: 100
-    town_level_exponent: 0.3
-    repel_block_type:
-      - '驿站'
-    trade_able: false
-    gain_cool_down: '1Hours'
-    trade_cool_down: '1Days'
-    gain_command:
-      - '[console]give experience %player% 100'
-      - '[console]money grant %player% 100'
+  publics:
+    - name: '驿站'
+      map_key: 'p'
+      limit_per_town: 1
+      same_nation_max: 2
+      base_price: 1000
+      base_sell_price: 500
+      base_gain_number: 100
+      town_level_exponent: 0.3
+      for_sale_able: false
+      repel_block_type:
+        - '驿站'
+      trade_able: false
+      gain_cool_down: '1Hours'
+      trade_cool_down: '1Days'
+      gain_command:
+        - '[console]give experience %player% 100'
+        - '[console]money grant %player% 100'
+  privates:
+    - name: '钢铁'
+      map_key: 'i'
+      limit_per_town: 1
+      same_nation_max: 1
+      base_price: 1000
+      base_sell_price: 500
+      base_gain_number: 100
+      town_level_exponent: 0.3
+      for_sale_able: false
+      repel_block_type:
+        - 'TNT'
+      trade_able: true
+      gain_cool_down: 10hour
+      trade_cool_down: 1day
+      gain_command:
+        - '[console]ecoitem give %player% gun 1'
+    - name: '魔法'
+      map_key: 'm'
+      limit_per_town: 1
+      same_nation_max: 2
+      base_price: 1000
+      base_sell_price: 500
+      base_gain_number: 100
+      town_level_exponent: 0.3
+      for_sale_able: false
+      repel_block_type:
+        - 'TNT'
+      trade_able: true
+      gain_cool_down: '10Hours'
+      trade_cool_down: '1Days'
+      gain_command:
+        - '[console]ecoitem give %player% tnt 1'
+
 
 

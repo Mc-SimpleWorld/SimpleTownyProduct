@@ -21,6 +21,8 @@ public class Configuration {
 
     private Integer perTownTypes;
 
+    private String prefix;
+
     private String locale;
 
     private boolean residentCanGain;
@@ -39,7 +41,7 @@ public class Configuration {
 
     private boolean haveNeutralityBlock;
 
-    private List<SpecialTownBlock> blockTypes = new ArrayList<>();
+    private SpecialTownBlock blockTypes;
 
     public void load() throws Exception {
         SimpleTownyProduct.logger.info("Loading configuration...");

@@ -31,6 +31,16 @@ public class Message {
 
     private String havePerNationTypes;
 
+    private String blockReachLimit;
+
+    private String nationBlockReachLimit;
+
+    private String cannotClaimNeutral;
+
+    private String alreadyHaveRepelBlock;
+
+    private String sendCommandToCheck;
+
     public void load() throws Exception{
         SimpleTownyProduct.logger.info("Loading messages...");
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
@@ -49,8 +59,6 @@ public class Message {
             }
         }
         instance.setMessage(message);
-        configuration.setVersion(SimpleTownyProduct.VERSION);
-        instance.configuration = configuration;
         SimpleTownyProduct.logger.info("Configuration loaded.");
     }
 }

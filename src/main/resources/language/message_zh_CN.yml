@@ -7,6 +7,11 @@ resident_can_not_claim_block: "你不允许声明一个新的特殊区块。"
 resident_can_not_gain: "你不允许获得特殊区块的产品。"
 have_per_town_types: "你已经达到了你的城镇特殊区块类型的限制。"
 have_per_nation_types: "你已经达到了你的国家特殊区块类型的限制。"
+block_reach_limit: "该类型特殊区块已经达到了它的限制: %s。"
+nation_block_reach_limit: "这个国家的特殊区块已经达到了它的限制: %s。"
+cannot_claim_neutral: "你不能声明区块为%s，因为它是中立的。"
+already_have_repel_block: "你不能声明%s的特殊区块，因为你已经有了%s的特殊区块。"
+send_command_to_check: "你已经声明了一个新的特殊区块，你可以使用 /t product info 来查看本城镇的特殊物品总产量。"
 
 
 
