@@ -18,12 +18,10 @@ import org.nott.model.Configuration;
 import org.nott.model.Message;
 import org.nott.model.SpecialTownBlock;
 import org.nott.model.abstracts.BaseBlock;
-import org.nott.model.abstracts.PrivateTownBlock;
-import org.nott.model.abstracts.PublicTownBlock;
+import org.nott.model.PrivateTownBlock;
+import org.nott.model.PublicTownBlock;
 import org.nott.time.Timer;
-import org.nott.utils.FileUtils;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -34,6 +32,8 @@ import java.util.logging.Logger;
 public final class SimpleTownyProduct extends JavaPlugin {
 
     public static final String VERSION = "0.0.1";
+
+    public static final String PLUGIN_NAME = "Simple Towny Product";
 
     public static Logger logger;
 

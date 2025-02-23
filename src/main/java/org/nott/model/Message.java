@@ -41,18 +41,54 @@ public class Message {
 
     private String sendCommandToCheck;
 
-    public void load() throws Exception{
+    private String mustStandInTown;
+
+    private String mustStandInBlock;
+
+    private String mustInOwnTown;
+
+    private String noSpecialBlock;
+
+    private String currentTown;
+
+    private String clickToGain;
+
+    private String specialBlock;
+
+    private String specialType;
+
+    private String whetherCoolDown;
+
+    private String publicType;
+
+    private String privateType;
+
+    private String coolDown;
+
+    private String unCoolDown;
+
+    private String gainCommandHover;
+
+    private String notInAnyTown;
+
+    private String notOnAnyBlock;
+
+    private String successGainProduct;
+
+    private String residentCantGain;
+
+    public void load() throws Exception {
         SimpleTownyProduct.logger.info("Loading messages...");
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
         Configuration configuration = instance.getConfiguration();
         String locale = configuration.getLocale();
         File file = new File(instance.getDataFolder() + File.separator + "language" + File.separator + "message_" + locale + ".yml");
         Message message;
-        if(file.exists()){
+        if (file.exists()) {
             message = FileUtils.loadYamlFile(file.getPath(), Message.class);
         } else {
             file = new File(instance.getDataFolder() + File.separator + "language" + File.separator + "message_en_US.yml");
-            if(file.exists()){
+            if (file.exists()) {
                 message = FileUtils.loadYamlFile(file.getPath(), Message.class);
             } else {
                 throw new RuntimeException("No default message file found.");

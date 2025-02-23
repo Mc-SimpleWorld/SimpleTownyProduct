@@ -3,7 +3,6 @@ package org.nott.listener;
 import com.palmergames.adventure.text.Component;
 import com.palmergames.adventure.text.format.NamedTextColor;
 import com.palmergames.adventure.text.format.TextColor;
-import com.palmergames.adventure.util.RGBLike;
 import com.palmergames.bukkit.towny.event.PlotChangeTypeEvent;
 import com.palmergames.bukkit.towny.event.PlotPreChangeTypeEvent;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
@@ -13,9 +12,6 @@ import org.bukkit.event.Listener;
 import org.nott.SimpleTownyProduct;
 import org.nott.model.Message;
 import org.nott.model.PlayerPlotBlock;
-import org.nott.model.SpecialTownBlock;
-import org.nott.model.abstracts.PrivateTownBlock;
-import org.nott.model.abstracts.PublicTownBlock;
 import org.nott.utils.Messages;
 import org.nott.utils.ProductUtils;
 

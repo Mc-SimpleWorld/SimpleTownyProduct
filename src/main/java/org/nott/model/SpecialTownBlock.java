@@ -1,8 +1,6 @@
 package org.nott.model;
 
 import lombok.Data;
-import org.nott.model.abstracts.PrivateTownBlock;
-import org.nott.model.abstracts.PublicTownBlock;
 
 import java.util.List;
 

@@ -1,15 +1,15 @@
 # Config version: 0.0.1
 ## Productive configuration
 version: 0.0.1
-prefix: '&7[&6TownProduct&7] &r'
-locale: 'en_US'
+prefix: '[SimpleTownyProduct]'
+locale: 'zh_CN'
 
 # Block types configuration
 # This configuration is used to define the block types that can be traded in the town.
 
 per_town_types: 2
-resident_can_gain: true
-resident_can_trade: true
+resident_can_gain: false
+resident_can_trade: false
 
 gain_private_need_stand_in_block: false
 # if gain_need_stand_in_block is flase,wheather the player need to stand in the town to doGain the block type

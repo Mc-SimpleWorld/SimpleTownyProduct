@@ -1,16 +1,16 @@
 package org.nott.utils;
 
 import com.palmergames.bukkit.towny.object.Town;
+import com.palmergames.bukkit.towny.object.TownBlock;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.nott.SimpleTownyProduct;
-import org.nott.model.PlayerPlotBlock;
-import org.nott.model.SpecialTownBlock;
+import org.nott.model.*;
 import org.nott.model.abstracts.BaseBlock;
-import org.nott.model.abstracts.PrivateTownBlock;
-import org.nott.model.abstracts.PublicTownBlock;
 import org.nott.time.Timer;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class ProductUtils {
@@ -59,5 +59,20 @@ public class ProductUtils {
     public static void addCoolDown(String uuid, PublicTownBlock publicTownBlock) {
         Timer timer = new Timer(uuid, publicTownBlock.getTradeCoolDown());
         timer.start();
+    }
+
+    public static List<PlayerPlotBlock> getSpecialBlockFromTownBlock(Collection<TownBlock> townBlocks, boolean needsPublic) {
+        // 从TownBlock中获取注册的特殊Block
+        Configuration configuration = SimpleTownyProduct.INSTANCE.getConfiguration();
+        SpecialTownBlock blockTypes = configuration.getBlockTypes();
+        List<PrivateTownBlock> privates = blockTypes.getPrivates();
+        List<PlayerPlotBlock> plotBlockList = privates.stream().filter(sb -> townBlocks.stream().anyMatch(tb -> tb.getTypeName().equals(sb.getName())))
+                .map(sb -> new PlayerPlotBlock(false, sb)).toList();
+        List<PlayerPlotBlock> list = new ArrayList<>(plotBlockList);
+        if(needsPublic){
+            List<PublicTownBlock> publics = blockTypes.getPublics();
+            list.addAll(publics.stream().map(sb -> new PlayerPlotBlock(true, sb)).toList());
+        }
+        return list;
     }
 }

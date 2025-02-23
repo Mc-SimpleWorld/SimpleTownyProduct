@@ -8,11 +8,17 @@ import java.util.List;
 
 @Data
 public abstract class BaseBlock {
+
     private Double townLevelExponent;
+
     private String gainCoolDown;
+
     private Integer baseGainNumber;
+
     private List<String> gainCommand;
+
     private String mapKey;
+
     private String name;
 
     private Integer limitPerTown;
