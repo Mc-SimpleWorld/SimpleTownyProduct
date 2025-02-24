@@ -5,6 +5,7 @@ import com.palmergames.adventure.text.format.NamedTextColor;
 import com.palmergames.adventure.text.format.TextColor;
 import com.palmergames.bukkit.towny.event.PlotChangeTypeEvent;
 import com.palmergames.bukkit.towny.event.PlotPreChangeTypeEvent;
+import com.palmergames.bukkit.towny.event.plot.PlotSetForSaleEvent;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.*;
 import org.bukkit.event.EventHandler;
@@ -106,5 +107,4 @@ public class TownyEventListener implements Listener {
         Resident mayor = town.getMayor();
         mayor.sendActionBar(Component.text(message.getSendCommandToCheck() + TextColor.color(NamedTextColor.GREEN.green())));
     }
-
 }

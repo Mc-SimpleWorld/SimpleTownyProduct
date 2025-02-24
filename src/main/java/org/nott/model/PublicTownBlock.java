@@ -5,9 +5,9 @@ import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import lombok.Data;
 import org.bukkit.Location;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.nott.SimpleTownyProduct;
+import org.nott.exception.ConfigWrongException;
 import org.nott.model.abstracts.BaseBlock;
 import org.nott.model.interfaces.Product;
 import org.nott.utils.Messages;
@@ -28,9 +28,10 @@ public class PublicTownBlock extends BaseBlock implements Product {
         Message message = instance.getMessage();
         if (currentBlock == null) {
             SimpleTownyProduct.logger.info("Not a Block. Skip.");
-            Messages.sendError((CommandSender) player, this.getName() + ":" + message.getMustStandInBlock());
+            Messages.sendError(player, this.getName() + ":" + message.getMustStandInBlock());
             return;
         }
+        Town town = towny.getTown(player);
         SpecialTownBlock blockTypes = instance.getConfiguration().getBlockTypes();
         List<PublicTownBlock> publics = blockTypes.getPublics();
         publics.stream().filter(publicTownBlock -> publicTownBlock.getName().equals(currentBlock.getType().getName())).findFirst().ifPresent(publicTownBlock -> {
@@ -40,10 +41,14 @@ public class PublicTownBlock extends BaseBlock implements Product {
                 SimpleTownyProduct.logger.info("In cool down. Skip.");
                 return;
             }
-            // ProductUtils.executeCommand(player, this, this.getGainCommand());
-            Messages.send((CommandSender) player, message.getSuccessGainProduct().formatted(this.getName()));
-            ProductUtils.addCoolDown(uuid, this);
+            try {
+                List<String> actuallyCommand = ProductUtils.formatBlockCommands(this, town);
+                ProductUtils.executeCommand(player, this, actuallyCommand);
+                Messages.send(player, message.getSuccessGainProduct().formatted(this.getName()));
+                ProductUtils.addCoolDown(uuid, this);
+            } catch (ConfigWrongException e) {
+                throw new RuntimeException(e);
+            }
         });
-
     }
 }

@@ -2,9 +2,12 @@ package org.nott.utils;
 
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.nott.SimpleTownyProduct;
+import org.nott.exception.ConfigWrongException;
 import org.nott.model.*;
 import org.nott.model.abstracts.BaseBlock;
 import org.nott.time.Timer;
@@ -31,20 +34,49 @@ public class ProductUtils {
 
     }
 
+    public static Long calculatedBlockCapacity(BaseBlock block, Town town) throws ConfigWrongException{
+        Integer baseGainNumber = block.getBaseGainNumber();
+        if(baseGainNumber <= 0){
+            throw new ConfigWrongException("Base Gain Number except > 0,get " + baseGainNumber);
+        }
+        Double townLevelExponent = block.getTownLevelExponent();
+        if (townLevelExponent <= 0){
+            townLevelExponent = 1D;
+        }
+        int levelNumber = town.getLevelNumber();
+        double result = baseGainNumber * levelNumber * townLevelExponent;
+        return result > 0.00D ? Long.parseLong(String.valueOf(result)) : 0L;
+    }
+
+    public static List<String> formatBlockCommands(BaseBlock block, Town town) throws ConfigWrongException {
+        Long blockCapacity = calculatedBlockCapacity(block, town);
+        // 计算产能
+        if(blockCapacity <= 0L){
+            throw new ConfigWrongException("Calculated Block Capacity get 0,please check you product block config.");
+        }
+        return block.getGainCommand().stream().map(command -> command.replaceAll("\\{\\{PRODUCT_NUMBER}}", blockCapacity + "")).toList();
+    }
+
     public static boolean isInCoolDown(String key, BaseBlock Block) {
         return Timer.timerMap.containsKey(key);
     }
 
+    public static boolean isSpecialBlock(TownBlock townBlock){
+        Configuration configuration = SimpleTownyProduct.INSTANCE.getConfiguration();
+        SpecialTownBlock blockTypes = configuration.getBlockTypes();
+        return blockTypes.getPrivates().stream().anyMatch(block -> block.getName().equals(townBlock.getTypeName())) ||
+                blockTypes.getPublics().stream().anyMatch(block -> block.getName().equals(townBlock.getTypeName()));
+    }
+
     public static void executeCommand(Player player, BaseBlock block, List<String> command) {
-        // do something
-        SimpleTownyProduct.logger.info("doGain in PrivateTownBlock");
         command.forEach(s -> {
-            if (s.startsWith("[console]")) {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), s.substring(9));
+            String realCommand = PlaceholderAPI.setPlaceholders(player, s);
+            if (realCommand.startsWith("[console]")) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), realCommand.substring(9));
                 return;
             }
-            if (s.startsWith("[player]")) {
-                Bukkit.dispatchCommand(player, s.substring(8));
+            if (realCommand.startsWith("[player]")) {
+                Bukkit.dispatchCommand(player, realCommand.substring(8));
                 return;
             }
 

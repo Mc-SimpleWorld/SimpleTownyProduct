@@ -19,6 +19,16 @@ gain_private_need_stand_in_nation: true
 
 # Need SiegeWar Plugins
 can_be_plundered: true
+# Other town can steal product
+private_can_be_steal: true
+# Steal rate on next gain
+steal_rate: 5
+# How long
+steal_need_stand_in_time: 2min
+steal_cool_down: 5hour
+# if steal_need_in_block ture, the thief should stand on special block, either in town
+steal_need_in_block: true
+
 # if can_be_plundered is true, how many block types doGain times can be plundered in next.
 plunder_gain_times: 1
 
@@ -36,7 +46,7 @@ block_types:
       base_price: 1000
       base_sell_price: 500
       base_gain_number: 100
-      town_level_exponent: 0.3
+      town_level_exponent: 0
       for_sale_able: false
       repel_block_type:
         - '驿站'
@@ -64,7 +74,7 @@ block_types:
       gain_cool_down: '10hour'
       trade_cool_down: '1day'
       gain_command:
-        - '[console]ecoitem give %player% gun 1'
+        - '[console]money grant %player% gun {{PRODUCT_NUMBER}}'
     - name: '魔法'
       map_key: 'm'
       limit_per_town: 1
@@ -80,7 +90,7 @@ block_types:
       gain_cool_down: '10hour'
       trade_cool_down: '1day'
       gain_command:
-        - '[console]ecoitem give %player% tnt 1'
+        - '[console]give %player% tnt {{PRODUCT_NUMBER}}'
 
 
 

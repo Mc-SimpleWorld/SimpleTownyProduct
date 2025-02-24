@@ -39,6 +39,10 @@ public abstract class BaseBlock {
 
     public void doGain(Player player) {
         // do something
-        SimpleTownyProduct.logger.info("doGain in Base");
+        SimpleTownyProduct.logger.info("DoGain in Base");
     };
+
+    public void doSteal(Player player){
+        SimpleTownyProduct.logger.info("DoSteal in Base");
+    }
 }

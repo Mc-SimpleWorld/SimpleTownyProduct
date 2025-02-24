@@ -9,12 +9,14 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.nott.SimpleTownyProduct;
+import org.nott.exception.ConfigWrongException;
 import org.nott.model.Configuration;
 import org.nott.model.abstracts.BaseBlock;
 import org.nott.model.interfaces.Product;
 import org.nott.utils.Messages;
 import org.nott.utils.ProductUtils;
 
+import java.util.List;
 import java.util.logging.Level;
 
 @Data
@@ -30,7 +32,7 @@ public class PrivateTownBlock extends BaseBlock implements Product {
         Resident resident = towny.getResident(player);
         Town town = resident.getTownOrNull();
         if(town == null){
-            Messages.sendError((CommandSender) player, message.getNotInTown());
+            Messages.sendError(player, message.getNotInTown());
             return;
         }
         boolean isMayor = town.isMayor(resident);
@@ -42,7 +44,7 @@ public class PrivateTownBlock extends BaseBlock implements Product {
         boolean isOwnTown = town.equals(atTown);
         if(!residentCanGain && !isMayor && isOwnTown){
             SimpleTownyProduct.logger.log(Level.INFO, "Resident can't gain. Skip.");
-            Messages.sendError((CommandSender) player,this.getName() + "-" + message.getResidentCantGain());
+            Messages.sendError(player,this.getName() + "-" + message.getResidentCantGain());
             return;
         }
         boolean gainPrivateNeedStandInBlock = configuration.isGainPrivateNeedStandInBlock();
@@ -52,18 +54,18 @@ public class PrivateTownBlock extends BaseBlock implements Product {
         if(gainPrivateNeedStandInTown){
             if(atTown == null || !atTown.getName().equals(town.getName()) || !isOwnTown){
                 SimpleTownyProduct.logger.log(Level.INFO, "Not in town. Skip.");
-                Messages.sendError((CommandSender) player,this.getName() + "-" + message.getMustStandInTown());
+                Messages.sendError(player,this.getName() + "-" + message.getMustStandInTown());
                 return;
             }
         }else if(gainPrivateNeedStandInBlock){
             if(townBlock == null || !isOwnTown || !townBlock.getType().getName().equals(this.getName())){
                 SimpleTownyProduct.logger.log(Level.INFO, "Not a Block. Skip.");
-                Messages.sendError((CommandSender) player,this.getName() + "-" + message.getMustStandInBlock());
+                Messages.sendError(player,this.getName() + "-" + message.getMustStandInBlock());
                 return;
             }
         }
         if(!isOwnTown){
-            Messages.sendError((CommandSender) player,this.getName() + "-" + message.getMustInOwnTown());
+            Messages.sendError(player,this.getName() + "-" + message.getMustInOwnTown());
             return;
         }
         // 判断是否在冷却中
@@ -71,12 +73,18 @@ public class PrivateTownBlock extends BaseBlock implements Product {
             SimpleTownyProduct.logger.log(Level.INFO, "In cool down. Skip.");
             return;
         }
-        // 执行命令
-//        ProductUtils.executeCommand(player, this, this.getGainCommand());
-        SimpleTownyProduct.logger.info("doGain in PrivateTownBlock");
-        Messages.send((CommandSender) player, message.getSuccessGainProduct().formatted(this.getName()));
-        // 添加冷却
-        ProductUtils.addCoolDown4Town(town, this);
+        try {
+            List<String> actuallyCommand = ProductUtils.formatBlockCommands(this, town);
+            ProductUtils.executeCommand(player, this, actuallyCommand);
+            Messages.send(player, message.getSuccessGainProduct().formatted(this.getName()));
+            ProductUtils.addCoolDown4Town(town, this);
+        } catch (ConfigWrongException e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    @Override
+    public void doSteal(Player player) {
+        super.doSteal(player);
+    }
 }

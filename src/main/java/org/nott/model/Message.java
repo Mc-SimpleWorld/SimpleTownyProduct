@@ -77,6 +77,14 @@ public class Message {
 
     private String residentCantGain;
 
+    private String checkConfigCorrect;
+
+    private String confirmToSteal;
+
+    private String giveUpSteal;
+
+    private String publicBlockCantSteal;
+
     public void load() throws Exception {
         SimpleTownyProduct.logger.info("Loading messages...");
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;

@@ -1,21 +1,28 @@
 package org.nott.command;
 
 import com.palmergames.bukkit.towny.TownyAPI;
+import com.palmergames.bukkit.towny.confirmations.Confirmation;
+import com.palmergames.bukkit.towny.confirmations.ConfirmationBuilder;
+import com.palmergames.bukkit.towny.confirmations.ConfirmationHandler;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
+import com.palmergames.bukkit.util.BukkitTools;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.nott.SimpleTownyProduct;
+import org.nott.event.PlotBeStealEvent;
+import org.nott.event.PrePlotStealEvent;
 import org.nott.model.Message;
 import org.nott.model.PlayerPlotBlock;
 import org.nott.model.abstracts.BaseBlock;
@@ -48,8 +55,41 @@ public class ProductCommand implements CommandExecutor {
             case "gain":
                 parseGainCommand(commandSender);
                 break;
+            case "steal":
+                parseStealCommand(commandSender, subArgs);
+                break;
         }
         return true;
+    }
+
+    private void parseStealCommand(CommandSender commandSender, String[] args) {
+        Player player = (Player) commandSender;
+        Location location = player.getLocation();
+        TownyAPI townyAPI = TownyAPI.getInstance();
+        Town town = townyAPI.getTown(location);
+        Message message = SimpleTownyProduct.INSTANCE.getMessage();
+        if (town == null) {
+            Messages.sendError(commandSender, message.getMustStandInTown());
+            return;
+        }
+        TownBlock townBlock = townyAPI.getTownBlock(location);
+        if (townBlock == null) {
+            Messages.sendError(commandSender, message.getMustStandInBlock());
+            return;
+        }
+        PlayerPlotBlock plotBlock = ProductUtils.findSpecialTownBlock(townBlock.getTypeName());
+        if (plotBlock == null) {
+            Messages.sendError(commandSender, message.getNoSpecialBlock());
+            return;
+        }
+        boolean blockPublic = plotBlock.isPublic();
+        if (blockPublic) {
+            Messages.sendError(commandSender, message.getPublicBlockCantSteal());
+            return;
+        }
+        BaseBlock block = plotBlock.getBlock();
+        PrePlotStealEvent event = new PrePlotStealEvent(block, player ,town);
+        BukkitTools.fireEvent(event);
     }
 
     private void parseGainCommand(CommandSender commandSender) {

@@ -29,7 +29,12 @@ un_cool_down: "可收获"
 not_in_any_town: "你不在任何城镇中"
 not_on_any_block: "你不在任何特殊区块中"
 success_gain_product: "你成功地收获了[%s]地块的资源。"
-resident_cant_gain: "居民没有权限获取整个城镇的特殊地块资源"
+resident_cant_gain: "居民没有权限获取整个城镇的特殊地块资源。"
+check_config_correct: "你的资源产能为0，请检查配置。"
+confirm_to_steal: "你确认要偷窃这个特殊区块的资源吗？"
+give_up_steal: "你已放弃偷取该区块的资源."
+public_block_cant_steal: "公有资源区块无法偷取。"
+
 
 
 

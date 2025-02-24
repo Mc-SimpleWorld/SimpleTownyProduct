@@ -21,11 +21,17 @@ public class Timer implements Comparable<Timer>{
 
     private long endTime;
 
-    public static PriorityBlockingQueue<Timer> timers = new PriorityBlockingQueue<>();
+    public static final PriorityBlockingQueue<Timer> timers = new PriorityBlockingQueue<>();
 
-    public static ConcurrentHashMap<String, Timer> timerMap = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<String, Timer> timerMap = new ConcurrentHashMap<>();
 
-    public static void run() {
+    public static final ConcurrentHashMap<Town, Double> lostProductTownMap = new ConcurrentHashMap<>();
+
+    public static void run(){
+        run0();
+    }
+
+    public static void run0() {
         while (true){
             try {
                 Timer frist = timers.peek();

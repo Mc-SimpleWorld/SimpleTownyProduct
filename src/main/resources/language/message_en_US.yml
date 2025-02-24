@@ -30,4 +30,8 @@ not_in_any_town: "You are not in any town."
 not_on_any_block: "You are not on any special block."
 success_gain_product: "Your gain the product from [%s] block successfully."
 resident_cant_gain: "Sorry,residents have no permission to gain the product from town."
+check_config_correct: "Your capacity of production is ZERO,please check your config."
+confirm_to_steal: "Are you sure to steal the product from the block under your feet?"
+give_up_steal: "You are give up to steal."
+public_block_cant_steal: "Public special block cant be steal."
 
