@@ -33,8 +33,6 @@ public final class SimpleTownyProduct extends JavaPlugin {
 
     public static final String VERSION = "0.0.1";
 
-    public static final String PLUGIN_NAME = "Simple Towny Product";
-
     public static Logger logger;
 
     public Configuration configuration;
@@ -65,6 +63,7 @@ public final class SimpleTownyProduct extends JavaPlugin {
 
     private void registerEvents() {
         this.getServer().getPluginManager().registerEvents(new org.nott.listener.TownyEventListener(), this);
+        this.getServer().getPluginManager().registerEvents(new org.nott.listener.BlockStealEventListener(), this);
     }
 
     private void registerSpecialTownBlock() {
@@ -132,7 +131,7 @@ public final class SimpleTownyProduct extends JavaPlugin {
             message.load();
         } catch (Exception e) {
             this.getLogger().log(Level.SEVERE, "Error loading configuration", e);
-            throw new RuntimeException(e);
+            getServer().getPluginManager().disablePlugin(this);
         }
     }
 

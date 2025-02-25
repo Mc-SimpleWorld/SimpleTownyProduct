@@ -8,6 +8,8 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import org.nott.model.abstracts.BaseBlock;
 
+import java.util.List;
+
 /**
  * @author Nott
  * @date 2025-2-24
@@ -15,16 +17,19 @@ import org.nott.model.abstracts.BaseBlock;
 @Data
 public class PlotBeStealEvent extends CancellableTownyEvent {
 
-    private BaseBlock targetBlock;
+    private List<BaseBlock> targetBlock;
 
     private Town targetTown;
 
     private Player thief;
 
-    public PlotBeStealEvent(BaseBlock block, Town town, Player thief) {
-        this.targetBlock = block;
-        this.targetTown = town;
+    private boolean stealWholeTownBlock;
+
+    public PlotBeStealEvent(List<BaseBlock> targetBlock, Town targetTown, Player thief, boolean stealWholeTownBlock) {
+        this.targetBlock = targetBlock;
+        this.targetTown = targetTown;
         this.thief = thief;
+        this.stealWholeTownBlock = stealWholeTownBlock;
     }
 
     private static final HandlerList HANDLER_LIST = new HandlerList();

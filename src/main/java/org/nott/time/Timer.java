@@ -3,10 +3,12 @@ package org.nott.time;
 import com.palmergames.bukkit.towny.object.Town;
 import lombok.Data;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.nott.SimpleTownyProduct;
 import org.nott.exception.ConfigWrongException;
 import org.nott.exception.TimeFormatException;
+import org.nott.model.StealActivity;
 
 import java.sql.Time;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,6 +28,8 @@ public class Timer implements Comparable<Timer>{
     public static final ConcurrentHashMap<String, Timer> timerMap = new ConcurrentHashMap<>();
 
     public static final ConcurrentHashMap<Town, Double> lostProductTownMap = new ConcurrentHashMap<>();
+
+    public static final ConcurrentHashMap<Player, StealActivity> runningStealActivity = new ConcurrentHashMap<>();
 
     public static void run(){
         run0();

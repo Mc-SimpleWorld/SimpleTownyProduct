@@ -57,7 +57,7 @@ public class ProductUtils {
         return block.getGainCommand().stream().map(command -> command.replaceAll("\\{\\{PRODUCT_NUMBER}}", blockCapacity + "")).toList();
     }
 
-    public static boolean isInCoolDown(String key, BaseBlock Block) {
+    public static boolean isInCoolDown(String key) {
         return Timer.timerMap.containsKey(key);
     }
 

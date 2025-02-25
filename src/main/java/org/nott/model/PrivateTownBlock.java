@@ -69,7 +69,7 @@ public class PrivateTownBlock extends BaseBlock implements Product {
             return;
         }
         // 判断是否在冷却中
-        if(ProductUtils.isInCoolDown(town.getUUID().toString(), this)){
+        if(ProductUtils.isInCoolDown(town.getUUID().toString())){
             SimpleTownyProduct.logger.log(Level.INFO, "In cool down. Skip.");
             return;
         }

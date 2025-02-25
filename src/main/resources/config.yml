@@ -6,7 +6,6 @@ locale: 'zh_CN'
 
 # Block types configuration
 # This configuration is used to define the block types that can be traded in the town.
-
 per_town_types: 2
 resident_can_gain: false
 resident_can_trade: false
@@ -20,7 +19,7 @@ gain_private_need_stand_in_nation: true
 # Need SiegeWar Plugins
 can_be_plundered: true
 # Other town can steal product
-private_can_be_steal: true
+block_can_be_steal: true
 # Steal rate on next gain
 steal_rate: 5
 # How long
@@ -31,8 +30,6 @@ steal_need_in_block: true
 
 # if can_be_plundered is true, how many block types doGain times can be plundered in next.
 plunder_gain_times: 1
-
-have_neutrality_block: true
 
 # Block types
 block_types:

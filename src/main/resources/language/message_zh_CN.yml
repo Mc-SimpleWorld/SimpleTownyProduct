@@ -32,8 +32,16 @@ success_gain_product: "你成功地收获了[%s]地块的资源。"
 resident_cant_gain: "居民没有权限获取整个城镇的特殊地块资源。"
 check_config_correct: "你的资源产能为0，请检查配置。"
 confirm_to_steal: "你确认要偷窃这个特殊区块的资源吗？"
+confirm_to_steal_town: "你确认要偷窃这个城镇的所有特殊资源吗？"
 give_up_steal: "你已放弃偷取该区块的资源."
 public_block_cant_steal: "公有资源区块无法偷取。"
+target_cooling_down: "目标区块正在冷却中。"
+wait_for_next_steal: "你不久前已经偷取过一次，请等待下一次。"
+not_open_steal: "偷取功能未启用。"
+steal_progress_title: "偷取中: %s"
+not_allow_steal_own_town: "不允许偷窃自己的城镇。"
+not_allow_steal_nation_town: "不允许偷取自己国家内的城镇。"
+your_town_be_stealing: "你的城镇[%s]中的特殊区块[%s]正被[%s]盗窃，请抓紧回防。"
 
 
 

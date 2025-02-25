@@ -82,7 +82,7 @@ public class TownyEventListener implements Listener {
                 return;
             }
             List<Town> towns = nation.getTowns();
-            List<Collection<TownBlock>> collect = towns.stream().map(Town::getTownBlocks).collect(Collectors.toList());
+            List<Collection<TownBlock>> collect = towns.stream().map(Town::getTownBlocks).toList();
             int count = (int) collect.stream().flatMap(Collection::stream).filter(townBlock -> townBlock.getType().getName().equals(name)).count();
             if(count >= sameNationMax) {
                 event.setCancelMessage(Messages.format(message.getNationBlockReachLimit(), sameNationMax));

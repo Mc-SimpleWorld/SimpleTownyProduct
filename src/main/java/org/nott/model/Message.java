@@ -81,9 +81,26 @@ public class Message {
 
     private String confirmToSteal;
 
+    private String confirmToStealTown;
+
     private String giveUpSteal;
 
     private String publicBlockCantSteal;
+
+    private String targetCoolingDown;
+
+    private String waitForNextSteal;
+
+    private String notOpenSteal;
+
+    private String stealProgressTitle;
+
+    private String yourTownBeStealing;
+
+    private String notAllowStealOwnTown;
+
+    private String notAllowStealNationTown;
+
 
     public void load() throws Exception {
         SimpleTownyProduct.logger.info("Loading messages...");

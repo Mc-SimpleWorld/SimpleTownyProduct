@@ -32,6 +32,16 @@ success_gain_product: "Your gain the product from [%s] block successfully."
 resident_cant_gain: "Sorry,residents have no permission to gain the product from town."
 check_config_correct: "Your capacity of production is ZERO,please check your config."
 confirm_to_steal: "Are you sure to steal the product from the block under your feet?"
+confirm_to_steal_town: "Are you sure to steal all the product from this town?"
 give_up_steal: "You are give up to steal."
 public_block_cant_steal: "Public special block cant be steal."
+target_cooling_down: "Target special block is cooling down."
+wait_for_next_steal: "You have stolen it once not long ago, please wait for the next time."
+not_open_steal: "Server not open steal feature for now."
+steal_progress_title: "Stealing, Time left: %s"
+not_allow_steal_own_town: "Not allow to steal your own town."
+not_allow_steal_nation_town: "Not allow to steal your own nation's town."
+your_town_be_stealing: "Your town [%s] special block [%s] is being player [%s] stealing, hurry to protect."
+
+
 

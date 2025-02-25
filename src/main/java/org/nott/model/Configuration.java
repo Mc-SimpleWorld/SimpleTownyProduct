@@ -3,6 +3,7 @@ package org.nott.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.nott.SimpleTownyProduct;
+import org.nott.exception.VersionNotCorrectException;
 import org.nott.utils.FileUtils;
 
 import java.io.File;
@@ -29,6 +30,16 @@ public class Configuration {
 
     private boolean residentCanTrade;
 
+    private boolean blockCanBeSteal;
+
+    private Double stealRate;
+
+    private String stealNeedStandInTime;
+
+    private String stealCoolDown;
+
+    private boolean stealNeedInBlock;
+
     private boolean gainPrivateNeedStandInBlock;
 
     private boolean gainPrivateNeedStandInTown;
@@ -39,14 +50,16 @@ public class Configuration {
 
     private Integer plunderGainTimes;
 
-    private boolean haveNeutralityBlock;
-
     private SpecialTownBlock blockTypes;
 
     public void load() throws Exception {
         SimpleTownyProduct.logger.info("Loading configuration...");
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
         Configuration configuration = FileUtils.loadYamlFile(instance.getDataFolder() + File.separator + "config.yml", Configuration.class);
+        String versionInConfig = configuration.getVersion();
+        if(!SimpleTownyProduct.VERSION.equals(versionInConfig)){
+            throw new VersionNotCorrectException("Get Wrong plugins version except %s, get %s, dont change version in config.yml or check your plugins jar file.".formatted(SimpleTownyProduct.VERSION, versionInConfig));
+        }
         instance.setConfiguration(configuration);
         SimpleTownyProduct.logger.info("Configuration loaded.");
     }

@@ -60,11 +60,11 @@ public class Messages {
     public static List<Component> buildProductScreen(List<Component> body){
         List<Component> components = new ArrayList<>();
         components.add(blankLine());
-        components.add(Component.text("---------[%s]--------".formatted(SimpleTownyProduct.PLUGIN_NAME)).color(NamedTextColor.BLUE));
+        components.add(Component.text("---------[%s]--------".formatted(SimpleTownyProduct.INSTANCE.configuration.getPrefix())).color(NamedTextColor.BLUE));
         components.add(blankLine());
         components.addAll(body);
         components.add(blankLine());
-        components.add(Component.text("---------[%s]--------".formatted(SimpleTownyProduct.PLUGIN_NAME)).color(NamedTextColor.BLUE));
+        components.add(Component.text("---------[%s]--------".formatted(SimpleTownyProduct.INSTANCE.configuration.getPrefix())).color(NamedTextColor.BLUE));
         components.add(blankLine());
         return components;
     }

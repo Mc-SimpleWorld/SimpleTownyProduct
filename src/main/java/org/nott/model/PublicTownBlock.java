@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.nott.SimpleTownyProduct;
 import org.nott.exception.ConfigWrongException;
+import org.nott.exception.MethodNotSupportException;
 import org.nott.model.abstracts.BaseBlock;
 import org.nott.model.interfaces.Product;
 import org.nott.utils.Messages;
@@ -36,7 +37,7 @@ public class PublicTownBlock extends BaseBlock implements Product {
         List<PublicTownBlock> publics = blockTypes.getPublics();
         publics.stream().filter(publicTownBlock -> publicTownBlock.getName().equals(currentBlock.getType().getName())).findFirst().ifPresent(publicTownBlock -> {
             String uuid = player.getUniqueId().toString();
-            boolean inCoolDown = ProductUtils.isInCoolDown(uuid, this);
+            boolean inCoolDown = ProductUtils.isInCoolDown(uuid);
             if (inCoolDown) {
                 SimpleTownyProduct.logger.info("In cool down. Skip.");
                 return;
@@ -50,5 +51,10 @@ public class PublicTownBlock extends BaseBlock implements Product {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    @Override
+    public void doSteal(Player player) {
+        throw new MethodNotSupportException();
     }
 }
