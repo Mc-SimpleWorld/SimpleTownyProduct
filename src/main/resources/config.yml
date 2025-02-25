@@ -90,4 +90,18 @@ block_types:
         - '[console]give %player% tnt {{PRODUCT_NUMBER}}'
 
 
+event_weeks_day:
+event_time: '14:00'
+events:
+  # type1: 增益事件 2:减益事件 3：挑战事件
+  - name: 'Good harvest'
+    type: 1
+    product_affect: 200%
+    last_time: 2times
+    probability: 5%
 
+  - name: 'Natural Disaster'
+    type: 2
+    product_affect: -50%
+    last_time: 2hour
+    probability: 8%

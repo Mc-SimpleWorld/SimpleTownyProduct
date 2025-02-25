@@ -24,7 +24,7 @@ public class PrivateTownBlock extends BaseBlock implements Product {
 
     @Override
     public void doGain(Player player) {
-        // do something
+        // todo 使用权限管理
         SimpleTownyProduct.logger.info("Start gain in [%s] PrivateTownBlock For player: [%s]".formatted(this.getName(), player.getName()));
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
         Message message = instance.getMessage();
