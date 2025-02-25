@@ -99,10 +99,11 @@ public final class SimpleTownyProduct extends JavaPlugin {
 
     private void registerTownySubCommand() {
         // Register Product command
-        TownyCommandAddonAPI.addSubCommand(TownyCommandAddonAPI.CommandType.TOWN, "product", new ProductCommand());
+//        TownyCommandAddonAPI.addSubCommand(TownyCommandAddonAPI.CommandType.TOWN, "product", new ProductCommand());
         AddonCommand myCommand = new AddonCommand(TownyCommandAddonAPI.CommandType.TOWN, "product", new ProductCommand());
-        myCommand.setTabCompletion(0, Arrays.asList("product", "p"));
-        myCommand.setTabCompletion(1, Arrays.asList("doGain", "info", "trade"));
+        // TODO fix tab complete
+        myCommand.setTabCompletion(0, Arrays.asList("product"));
+        myCommand.setTabCompletion(1, Arrays.asList("gain", "info", "trade"));
         TownyCommandAddonAPI.addSubCommand(myCommand);
     }
 
@@ -138,6 +139,7 @@ public final class SimpleTownyProduct extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+        // TODO 数据持久化
         logger.info("SimpleTownyProduct already shut down...");
     }
 

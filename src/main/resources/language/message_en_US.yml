@@ -1,3 +1,4 @@
+plugins_description: "A plugin base on TownyAdventured, use `/t product help` to check command."
 common_no_permission: "You don't have permission to do that."
 success_claim_new_block: "You have successfully claimed a new special block, %block_name%."
 success_sell_block: "You have successfully sold a special block, %block_name%."
@@ -42,6 +43,18 @@ steal_progress_title: "Stealing, Time left: %s"
 not_allow_steal_own_town: "Not allow to steal your own town."
 not_allow_steal_nation_town: "Not allow to steal your own nation's town."
 your_town_be_stealing: "Your town [%s] special block [%s] is being player [%s] stealing, hurry to protect."
+thief_out_town_warning: "Target left, go back in %s s."
+steal_fail_title: "Steal Fail"
+steal_interrupt_for_out: "Out target."
+steal_success_title: "Steal Success"
+steal_success_sub_title: "Steal from target successfully."
+command_help:
+  - "/t product help: See the commands help."
+  - "/t product info: Check your special block info."
+  - "/t product gain: Get the special block products."
+  - "/t product steal: Steal a part of product from other town's special block"
+command_admin_help:
+  - "/t product reload: Reload plugins."
 
 
 

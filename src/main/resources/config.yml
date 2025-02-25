@@ -1,7 +1,7 @@
 # Config version: 0.0.1
 ## Productive configuration
 version: 0.0.1
-prefix: '[SimpleTownyProduct]'
+prefix: 'SimpleTownyProduct'
 locale: 'zh_CN'
 
 # Block types configuration
@@ -27,7 +27,7 @@ steal_need_stand_in_time: 2min
 steal_cool_down: 5hour
 # if steal_need_in_block ture, the thief should stand on special block, either in town
 steal_need_in_block: true
-
+steal_temp_out_second: 5
 # if can_be_plundered is true, how many block types doGain times can be plundered in next.
 plunder_gain_times: 1
 
@@ -51,8 +51,7 @@ block_types:
       gain_cool_down: '1hour'
       trade_cool_down: '1day'
       gain_command:
-        - '[console]give experience %player% 100'
-        - '[console]money grant %player% 100'
+        - '[console]money grant %player_name% 100'
   # Private block types
   # Only the owner of the town can gain products from the private block types
   privates:
@@ -71,7 +70,7 @@ block_types:
       gain_cool_down: '10hour'
       trade_cool_down: '1day'
       gain_command:
-        - '[console]money grant %player% gun {{PRODUCT_NUMBER}}'
+        - '[console]money grant %player_name% gun {{PRODUCT_NUMBER}}'
     - name: '魔法'
       map_key: 'm'
       limit_per_town: 1
@@ -87,21 +86,21 @@ block_types:
       gain_cool_down: '10hour'
       trade_cool_down: '1day'
       gain_command:
-        - '[console]give %player% tnt {{PRODUCT_NUMBER}}'
+        - '[console]give %player_name% tnt {{PRODUCT_NUMBER}}'
 
 
-event_weeks_day:
-event_time: '14:00'
-events:
-  # type1: 增益事件 2:减益事件 3：挑战事件
-  - name: 'Good harvest'
-    type: 1
-    product_affect: 200%
-    last_time: 2times
-    probability: 5%
-
-  - name: 'Natural Disaster'
-    type: 2
-    product_affect: -50%
-    last_time: 2hour
-    probability: 8%
+#event_weeks_day:
+#event_time: '14:00'
+#events:
+#  # type1: 增益事件 2:减益事件 3：挑战事件
+#  - name: 'Good harvest'
+#    type: 1
+#    product_affect: 200%
+#    last_time: 2times
+#    probability: 5%
+#
+#  - name: 'Natural Disaster'
+#    type: 2
+#    product_affect: -50%
+#    last_time: 2hour
+#    probability: 8%

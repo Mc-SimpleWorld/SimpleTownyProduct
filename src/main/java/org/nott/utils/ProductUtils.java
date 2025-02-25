@@ -45,7 +45,7 @@ public class ProductUtils {
         }
         int levelNumber = town.getLevelNumber();
         double result = baseGainNumber * levelNumber * townLevelExponent;
-        return result > 0.00D ? Long.parseLong(String.valueOf(result)) : 0L;
+        return result > 0.00D ? Math.round(result)  : 0L;
     }
 
     public static List<String> formatBlockCommands(BaseBlock block, Town town) throws ConfigWrongException {

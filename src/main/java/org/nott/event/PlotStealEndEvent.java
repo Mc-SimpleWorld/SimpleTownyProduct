@@ -9,8 +9,15 @@ import org.jetbrains.annotations.NotNull;
  * @date 2025-2-25
  */
 public class PlotStealEndEvent extends Event {
+
+    private static final HandlerList HANDLER_LIST = new HandlerList();
+
+    public static HandlerList getHandlerList() {
+        return HANDLER_LIST;
+    }
+
     @Override
     public @NotNull HandlerList getHandlers() {
-        return null;
+        return HANDLER_LIST;
     }
 }

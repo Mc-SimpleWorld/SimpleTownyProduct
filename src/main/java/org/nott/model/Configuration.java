@@ -48,6 +48,8 @@ public class Configuration {
 
     private boolean canBePlundered;
 
+    private Integer stealTempOutSecond;
+
     private Integer plunderGainTimes;
 
     private SpecialTownBlock blockTypes;

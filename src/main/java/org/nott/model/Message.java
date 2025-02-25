@@ -5,6 +5,7 @@ import org.nott.SimpleTownyProduct;
 import org.nott.utils.FileUtils;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * @author Nott
@@ -12,6 +13,8 @@ import java.io.File;
  */
 @Data
 public class Message {
+
+    private String pluginsDescription;
 
     private String commonNoPermission;
 
@@ -100,6 +103,20 @@ public class Message {
     private String notAllowStealOwnTown;
 
     private String notAllowStealNationTown;
+
+    private String thiefOutTownWarning;
+
+    private String stealInterruptForOut;
+
+    private String stealFailTitle;
+
+    private String stealSuccessTitle;
+
+    private String stealSuccessSubTitle;
+
+    private List<String> commandHelp;
+
+    private List<String> commandAdminHelp;
 
 
     public void load() throws Exception {

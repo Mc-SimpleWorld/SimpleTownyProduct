@@ -35,6 +35,10 @@ public class PrePlotStealEvent extends CancellableTownyEvent {
         this.stealWholeTownBlock = stealWholeTownBlock;
     }
 
+    public static HandlerList getHandlerList() {
+        return HANDLER_LIST;
+    }
+
     @Override
     public @NotNull HandlerList getHandlers() {
         return HANDLER_LIST;

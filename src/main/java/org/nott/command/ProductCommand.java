@@ -46,12 +46,18 @@ public class ProductCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
         instance.getLogger().info("Product command executed.");
-        if (args.length == 0) {
-            return true;
-        }
-        String execute = args[0];
+        String execute = args.length > 0 ? args[0] : "";
         String[] subArgs = CommonUtils.removeFirstElement(args);
         switch (execute) {
+            default:
+                parsePluginInfoCommand(commandSender);
+                break;
+            case "help":
+                parseHelpCommand(commandSender);
+                break;
+            case "reload":
+                parseReloadCommand(commandSender);
+                break;
             case "info":
                 parseInfoCommand(commandSender, subArgs);
                 break;
@@ -63,6 +69,39 @@ public class ProductCommand implements CommandExecutor {
                 break;
         }
         return true;
+    }
+
+    private void parseHelpCommand(CommandSender commandSender) {
+        Message message = SimpleTownyProduct.INSTANCE.getMessage();
+        boolean op = commandSender.isOp();
+        List<Component> texts = new ArrayList<Component>();
+        for (String string : message.getCommandHelp()) {
+            texts.add(Component.text(string, NamedTextColor.GOLD));
+        }
+        if(op){
+            for (String string : message.getCommandAdminHelp()) {
+                texts.add(Component.text(string, NamedTextColor.GOLD));
+            }
+        }
+        Messages.sendMessages(commandSender, Messages.buildProductScreen(texts));
+    }
+
+    private void parsePluginInfoCommand(CommandSender commandSender) {
+        Message message = SimpleTownyProduct.INSTANCE.getMessage();
+        Configuration configuration = SimpleTownyProduct.INSTANCE.getConfiguration();
+        List<Component> texts = new ArrayList<Component>();
+        texts.add(Component.text(configuration.getPrefix(), NamedTextColor.DARK_GREEN));
+        texts.add(Component.text(message.getPluginsDescription(), NamedTextColor.DARK_GREEN));
+        texts.add(Component.text("Version: [%s]".formatted(configuration.getVersion()), NamedTextColor.DARK_GREEN));
+        Messages.sendMessages(commandSender, Messages.buildProductScreen(texts));
+    }
+
+    private void parseReloadCommand(CommandSender commandSender) {
+        if(!commandSender.isOp()){
+            Messages.sendError(commandSender, SimpleTownyProduct.INSTANCE.getMessage().getCommonNoPermission());
+            return;
+        }
+        SimpleTownyProduct.INSTANCE.loadConfiguration();
     }
 
     private void parseStealCommand(CommandSender commandSender, String[] args) {
@@ -106,7 +145,7 @@ public class ProductCommand implements CommandExecutor {
 
             PlayerPlotBlock plotBlock = ProductUtils.findSpecialTownBlock(townBlock.getTypeName());
             if (plotBlock == null) {
-                Messages.sendError(commandSender, message.getNoSpecialBlock());
+                Messages.sendError(commandSender, message.getNotOnAnyBlock());
                 return;
             }
             boolean blockPublic = plotBlock.isPublic();
@@ -157,7 +196,7 @@ public class ProductCommand implements CommandExecutor {
         List<PlayerPlotBlock> haveBlocks = ProductUtils.getSpecialBlockFromTownBlock(townBlocks, true);
         // 异步处理地块收获产品逻辑
         haveBlocks.forEach(townBlock -> {
-            SimpleTownyProduct.SCHEDULER.runTaskAsynchronously(instance, () -> {
+            SimpleTownyProduct.SCHEDULER.runTask(instance, () -> {
                 BaseBlock block = townBlock.getBlock();
                 block.doGain(player);
             });

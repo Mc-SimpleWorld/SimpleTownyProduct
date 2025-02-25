@@ -34,6 +34,10 @@ public class PlotBeStealEvent extends CancellableTownyEvent {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
+    public static HandlerList getHandlerList() {
+        return HANDLER_LIST;
+    }
+
     @Override
     public @NotNull HandlerList getHandlers() {
         return HANDLER_LIST;

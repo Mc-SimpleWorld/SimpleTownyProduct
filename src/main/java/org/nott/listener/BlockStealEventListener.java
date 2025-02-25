@@ -10,6 +10,8 @@ import com.palmergames.bukkit.towny.utils.JailUtil;
 import com.palmergames.bukkit.util.BukkitTools;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -32,6 +34,7 @@ import org.nott.time.TimePeriod;
 import org.nott.time.Timer;
 import org.nott.utils.Messages;
 
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -49,9 +52,11 @@ public class BlockStealEventListener implements Listener {
         Confirmation.runOnAcceptAsync(() -> BukkitTools.fireEvent(new PlotBeStealEvent(prePlotStealEvent.getBlocks(), town, player, stealWholeTownBlock)))
                 .setTitle(stealWholeTownBlock ? message.getConfirmToStealTown() : message.getConfirmToSteal())
                 .setAsync(true)
-                .setCancelText(message.getGiveUpSteal())
                 .setDuration(20)
-                .runOnCancel(() -> prePlotStealEvent.setCancelled(true))
+                .runOnCancel(() -> {
+                    Messages.sendError(player, message.getGiveUpSteal());
+                    prePlotStealEvent.setCancelled(true);
+                })
                 .sendTo(player);
     }
 
@@ -66,36 +71,48 @@ public class BlockStealEventListener implements Listener {
         Long val = TimePeriod.fromStringGetVal(stealNeedStandInTime);
         List<BaseBlock> targetBlock = plotBeStealEvent.getTargetBlock();
         StealActivity activity = new StealActivity(plotBeStealEvent);
+        // TODO 添加偷窃冷却
+
         // 若小偷在偷取中PVP死亡，将会被送入监狱并取消偷窃事件
         town.setPVP(true);
         SimpleTownyProduct.SCHEDULER.runTaskAsynchronously(instance, () -> {
-            long second = val / 1000 / 60;
+            long second = val / 1000;
             long start = System.currentTimeMillis();
             // 创建进度条（bossbar）
-            final BossBar bar = BossBar.bossBar(Component.text(message.getStealProgressTitle().formatted(second + "s")), 1, BossBar.Color.BLUE, BossBar.Overlay.PROGRESS);
+            final BossBar bar = BossBar.bossBar(Component.text(message.getStealProgressTitle().formatted(second + "s"), NamedTextColor.DARK_GREEN), 1, BossBar.Color.BLUE, BossBar.Overlay.PROGRESS);
             player.showBossBar(bar);
             while (true){
                 long currented = System.currentTimeMillis();
                 if(currented >= start + val){
+                    final Component mainTitle = Component.text(message.getStealSuccessTitle(), NamedTextColor.GREEN);
+                    final Component subtitle = Component.text(message.getStealSuccessSubTitle(), NamedTextColor.GREEN);
+                    Title title = Title.title(mainTitle, subtitle, Title.Times.times(Duration.ofSeconds(3), Duration.ofSeconds(5), Duration.ofMillis(2)));
                     player.hideBossBar(bar);
+                    player.showTitle(title);
+                    activity.finish();
                     break;
                 }
                 // 如果偷取事件被取消，则bossbar也取消
                 if(activity.isInterrupt()){
                     SimpleTownyProduct.logger.info("Stealing event is over :" + activity.getInterruptReason());
+                    final Component mainTitle = Component.text(message.getStealFailTitle(), NamedTextColor.DARK_RED);
+                    final Component subtitle = Component.text(activity.getInterruptReason(), NamedTextColor.DARK_RED);
+                    Title title = Title.title(mainTitle, subtitle, Title.Times.times(Duration.ofSeconds(3), Duration.ofSeconds(5), Duration.ofMillis(2)));
                     player.hideBossBar(bar);
+                    player.showTitle(title);
                     break;
                 }
-                long left = (start + val - currented) / 60 / 1000;
+                long left = (start + val - currented) / 1000;
                 double progress = (double) (currented - start) / val;
                 bar.name(Component.text(message.getStealProgressTitle().formatted(left + "s")));
-                bar.progress(Math.round((float) progress));
+                bar.progress((float) progress);
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
                 activity.checkThiefIfOut();
+
             }
 
         });
@@ -110,7 +127,7 @@ public class BlockStealEventListener implements Listener {
             for (Resident resident : residents) {
                 if (resident.isOnline()) {
                     Player residentPlayer = resident.getPlayer();
-                    Messages.sendError((CommandSender) residentPlayer,
+                    Messages.sendError(residentPlayer,
                             message.getYourTownBeStealing()
                             , town.getName(), targetBlocksName.toString(), player.getName());
                 }
