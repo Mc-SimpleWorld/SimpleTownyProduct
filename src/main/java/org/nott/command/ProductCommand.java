@@ -164,7 +164,7 @@ public class ProductCommand implements CommandExecutor {
             targetBlocks = plotBlocks.stream().map(PlayerPlotBlock::getBlock).collect(Collectors.toList());
         }
 
-        if(ProductUtils.isInCoolDown(player.getUniqueId().toString())){
+        if(ProductUtils.isInCoolDown("STEAL:" + player.getUniqueId())){
             Messages.sendError(commandSender, message.getWaitForNextSteal());
             return;
         }
