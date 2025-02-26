@@ -26,6 +26,8 @@ public class Configuration {
 
     private String locale;
 
+    private DataBase dataBase;
+
     private boolean residentCanGain;
 
     private boolean residentCanTrade;

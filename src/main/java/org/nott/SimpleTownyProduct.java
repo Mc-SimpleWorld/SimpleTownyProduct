@@ -14,14 +14,18 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.nott.command.ProductCommand;
+import org.nott.data.file.DataFileHandler;
+import org.nott.data.file.DataHandlerRegistrar;
 import org.nott.model.Configuration;
 import org.nott.model.Message;
 import org.nott.model.SpecialTownBlock;
 import org.nott.model.abstracts.BaseBlock;
 import org.nott.model.PrivateTownBlock;
 import org.nott.model.PublicTownBlock;
+import org.nott.model.enums.DbTypeEnum;
 import org.nott.time.Timer;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -47,6 +51,8 @@ public final class SimpleTownyProduct extends JavaPlugin {
 
     public static Economy ECONOMY;
 
+    public DataHandlerRegistrar dataHandlerRegistrar;
+
     @Override
     public void onEnable() {
         // Plugin startup logic
@@ -57,8 +63,21 @@ public final class SimpleTownyProduct extends JavaPlugin {
         this.registerEvents();
         this.registerTownySubCommand();
         this.registerSpecialTownBlock();
+        this.registerDataHandler();
         SCHEDULER.runTaskAsynchronously(this, Timer::run);
         logger.info("SimpleTownyProduct started.");
+    }
+
+    private void registerDataHandler() {
+        String storageType = this.configuration.getDataBase().getStorageType();
+        if (storageType.equals(DbTypeEnum.FILE.name())) {
+            this.saveResource("data/cooldown.txt", false);
+            this.dataHandlerRegistrar = DataHandlerRegistrar.Builder()
+                    .register(new DataFileHandler(new File(this.getDataFolder() + File.separator + "data" + File.separator + "cooldown.txt")))
+                    .build();
+        }else {
+            throw new IllegalArgumentException("Not Support Other Storage Type except 'File'.");
+        }
     }
 
     private void registerEvents() {
@@ -139,7 +158,8 @@ public final class SimpleTownyProduct extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        // TODO 数据持久化
+        // 数据持久化
+        this.dataHandlerRegistrar.end();
         logger.info("SimpleTownyProduct already shut down...");
     }
 

@@ -4,6 +4,12 @@ version: 0.0.1
 prefix: 'SimpleTownyProduct'
 locale: 'zh_CN'
 
+data_base:
+  # Only 'File' for now.
+  storage_type: File
+  # Back up minute set 0 to disable.
+  back_up: 10
+
 # Block types configuration
 # This configuration is used to define the block types that can be traded in the town.
 per_town_types: 2
