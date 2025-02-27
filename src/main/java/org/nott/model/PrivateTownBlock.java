@@ -4,11 +4,13 @@ import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
+import com.palmergames.bukkit.util.BukkitTools;
 import lombok.Data;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.nott.SimpleTownyProduct;
+import org.nott.event.PlotGainProductEvent;
 import org.nott.exception.ConfigWrongException;
 import org.nott.model.Configuration;
 import org.nott.model.abstracts.BaseBlock;
@@ -77,6 +79,7 @@ public class PrivateTownBlock extends BaseBlock implements Product {
             List<String> actuallyCommand = ProductUtils.formatBlockCommands(this, town);
             ProductUtils.executeCommand(player, this, actuallyCommand);
             Messages.send(player, message.getSuccessGainProduct().formatted(this.getName()));
+            BukkitTools.fireEvent(new PlotGainProductEvent(town, this, player));
             ProductUtils.addCoolDown4Town(town, this);
         } catch (ConfigWrongException e) {
             throw new RuntimeException(e);
