@@ -34,11 +34,11 @@ public class PrivateTownBlock extends BaseBlock implements Product {
         TownyAPI towny = TownyAPI.getInstance();
         Resident resident = towny.getResident(player);
         Town town = resident.getTownOrNull();
-        String key = this.getName() + ":" + player.getUniqueId();
         if(town == null){
             Messages.sendError(player, message.getNotInTown());
             return;
         }
+        String key = this.getName() + ":" + town.getUUID().toString();
         Configuration configuration = instance.getConfiguration();
         Location location = player.getLocation();
         Town atTown = towny.getTown(location);
