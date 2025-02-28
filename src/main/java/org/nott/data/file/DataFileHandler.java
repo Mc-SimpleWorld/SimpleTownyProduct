@@ -1,8 +1,11 @@
 package org.nott.data.file;
 
 import org.nott.SimpleTownyProduct;
+import org.nott.model.Configuration;
+import org.nott.time.Timer;
 
 import java.io.*;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -50,6 +53,7 @@ public class DataFileHandler implements DataHandler<Map<String,String>, File> {
     @Override
     public void write(Map<String, String> d) {
         lock.writeLock().lock();
+        // TODO 判断是否需要清空原数据
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             for (Map.Entry<String, String> entry : d.entrySet()) {
                 writer.write(entry.getKey() + "=" + entry.getValue());
@@ -61,35 +65,53 @@ public class DataFileHandler implements DataHandler<Map<String,String>, File> {
             lock.writeLock().unlock();
         }
     }
-
-    @Override
-    public void backUp(Map<String, String> d) {
-        lock.writeLock().lock();
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            for (Map.Entry<String, String> entry : d.entrySet()) {
-                writer.write(entry.getKey() + "=" + entry.getValue());
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            SimpleTownyProduct.logger.severe(e.getMessage());
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
 
     @Override
     public void runOnBackground() {
-
+        Configuration configuration = SimpleTownyProduct.INSTANCE.getConfiguration();
+        Integer backUp = configuration.getDataBase().getBackUp();
+        if(backUp == 0){
+            return;
+        }
+        while (true){
+            this.saveData();
+            try {
+                Thread.sleep(Duration.ofMinutes(backUp));
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
     }
 
     @Override
     public void saveOnShutDown() {
+        saveData();
+        SimpleTownyProduct.logger.info("Store data successfully..");
+    }
 
+    private void saveData() {
+        Map<String, String> data = this.read();
+        if(data.isEmpty()){
+            data = new HashMap<>();
+        }
+        for (String uuid : Timer.timerMap.keySet()) {
+            Timer timer = Timer.timerMap.get(uuid);
+            long endTime = timer.getEndTime();
+            long startTime = timer.getStartTime();
+            long period = endTime - startTime;
+            data.put(uuid, period + "");
+        }
+        this.write(data);
     }
 
     @Override
     public void runOnStart() {
-
+        Map<String, String> read = this.read();
+        for (String key : read.keySet()) {
+            String data = read.get(key);
+            Timer timer = new Timer(key, Long.parseLong(data));
+            timer.start();
+        }
+        SimpleTownyProduct.logger.info("Set up data successfully..");
     }
 }

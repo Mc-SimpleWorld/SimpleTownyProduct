@@ -34,6 +34,7 @@ public class DataHandlerRegistrar {
         // 初始化数据
         this.handler.runOnStart();
         SimpleTownyProduct.logger.info("DataHandler has been successfully registered and initialized.");
+        new Thread(() -> this.handler.runOnBackground());
         return this;
     }
 

@@ -70,7 +70,7 @@ public final class SimpleTownyProduct extends JavaPlugin {
 
     private void registerDataHandler() {
         String storageType = this.configuration.getDataBase().getStorageType();
-        if (storageType.equals(DbTypeEnum.FILE.name())) {
+        if (storageType.equalsIgnoreCase(DbTypeEnum.FILE.name())) {
             this.saveResource("data/cooldown.txt", false);
             this.dataHandlerRegistrar = DataHandlerRegistrar.Builder()
                     .register(new DataFileHandler(new File(this.getDataFolder() + File.separator + "data" + File.separator + "cooldown.txt")))

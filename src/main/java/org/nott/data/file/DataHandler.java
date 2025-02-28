@@ -6,8 +6,6 @@ public interface DataHandler<Data, File> {
 
     void write(Data d);
 
-    void backUp(Data d);
-
     void runOnBackground();
     
     void saveOnShutDown();

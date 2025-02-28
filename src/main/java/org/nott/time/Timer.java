@@ -31,11 +31,11 @@ public class Timer implements Comparable<Timer>{
 
     public static final PriorityBlockingQueue<Timer> timers = new PriorityBlockingQueue<>();
 
-    public static final ConcurrentHashMap<String, Timer> timerMap = new ConcurrentHashMap<>();
+    public static final Map<String, Timer> timerMap = new ConcurrentHashMap<>();
 
-    public static final ConcurrentHashMap<String, Long> lostProductTownMap = new ConcurrentHashMap<>();
+    public static final Map<String, Long> lostProductTownMap = new ConcurrentHashMap<>();
 
-    public static final ConcurrentHashMap<String, StealActivity> runningStealActivity = new ConcurrentHashMap<>();
+    public static final Map<String, StealActivity> runningStealActivity = new ConcurrentHashMap<>();
 
     public static final Map<Player, List<Component>> email = new ConcurrentHashMap<>();
 
