@@ -33,6 +33,7 @@ import org.nott.model.abstracts.BaseBlock;
 import org.nott.time.TimePeriod;
 import org.nott.time.Timer;
 import org.nott.utils.Messages;
+import org.nott.utils.ProductUtils;
 
 import java.time.Duration;
 import java.util.List;
@@ -71,8 +72,8 @@ public class BlockStealEventListener implements Listener {
         Long val = TimePeriod.fromStringGetVal(stealNeedStandInTime);
         List<BaseBlock> targetBlock = plotBeStealEvent.getTargetBlock();
         StealActivity activity = new StealActivity(plotBeStealEvent);
-        // TODO 添加偷窃冷却
-
+        // 添加偷窃冷却
+        ProductUtils.addCoolDown(Timer.STEAL_KEY + player.getUniqueId(), TimePeriod.fromStringGetVal(configuration.getStealCoolDown()));
         // 若小偷在偷取中PVP死亡，将会被送入监狱并取消偷窃事件
         town.setPVP(true);
         SimpleTownyProduct.SCHEDULER.runTaskAsynchronously(instance, () -> {
@@ -121,7 +122,7 @@ public class BlockStealEventListener implements Listener {
             targetBlocksName.append(block.getName());
         }
         // 发送警告信息给受害城镇
-        Timer.runningStealActivity.put(player, activity);
+        Timer.runningStealActivity.put(player.getUniqueId().toString(), activity);
         SimpleTownyProduct.SCHEDULER.runTaskAsynchronously(instance, () -> {
             List<Resident> residents = town.getResidents();
             for (Resident resident : residents) {
@@ -137,6 +138,19 @@ public class BlockStealEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockStealActInterruptEvent(PlotStealEndEvent event){
+        SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
+        String thiefName = event.getThiefName();
+        Long lost = event.getLost();
+        Town town = event.getTown();
+        BaseBlock block = event.getBlock();
+        // TODO 发送给拥有gain权限的人
+        // 现在发给在线的市长
+        Resident mayor = town.getMayor();
+        if (mayor.isOnline()) {
+            Messages.send(mayor.getPlayer(), instance.getMessage().getBeStolenWarning()
+                    .formatted(town.getName(), block.getName(), thiefName, lost));
+            return;
+        }
         SimpleTownyProduct.logger.info("PlotStealEndEvent fired");
     }
 
@@ -150,8 +164,8 @@ public class BlockStealEventListener implements Listener {
         EntityDamageEvent entityDamageEvent = event.getEntity().getLastDamageCause();
         Entity entity = entityDamageEvent.getDamageSource().getCausingEntity();
         Player player = event.getPlayer();
-        if (entity instanceof Player && Timer.runningStealActivity.containsKey(player)) {
-            StealActivity activity = Timer.runningStealActivity.get(player);
+        if (entity instanceof Player && Timer.runningStealActivity.containsKey(player.getUniqueId().toString())) {
+            StealActivity activity = Timer.runningStealActivity.get(player.getUniqueId().toString());
             activity.setInterruptReason("Thief death.");
             activity.setInterrupt(true);
             Town town = activity.getTargetTown();

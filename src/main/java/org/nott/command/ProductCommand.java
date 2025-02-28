@@ -28,6 +28,7 @@ import org.nott.model.Configuration;
 import org.nott.model.Message;
 import org.nott.model.PlayerPlotBlock;
 import org.nott.model.abstracts.BaseBlock;
+import org.nott.time.Timer;
 import org.nott.utils.CommonUtils;
 import org.nott.utils.Messages;
 import org.nott.utils.ProductUtils;
@@ -78,7 +79,7 @@ public class ProductCommand implements CommandExecutor {
         for (String string : message.getCommandHelp()) {
             texts.add(Component.text(string, NamedTextColor.GOLD));
         }
-        if(op){
+        if (op) {
             for (String string : message.getCommandAdminHelp()) {
                 texts.add(Component.text(string, NamedTextColor.GOLD));
             }
@@ -97,7 +98,7 @@ public class ProductCommand implements CommandExecutor {
     }
 
     private void parseReloadCommand(CommandSender commandSender) {
-        if(!commandSender.isOp()){
+        if (!commandSender.isOp()) {
             Messages.sendError(commandSender, SimpleTownyProduct.INSTANCE.getMessage().getCommonNoPermission());
             return;
         }
@@ -116,11 +117,11 @@ public class ProductCommand implements CommandExecutor {
         Configuration configuration = SimpleTownyProduct.INSTANCE.getConfiguration();
         boolean stealFromTown = !configuration.isStealNeedInBlock();
         List<BaseBlock> targetBlocks = new ArrayList<>();
-        if(!configuration.isBlockCanBeSteal()){
+        if (!configuration.isBlockCanBeSteal()) {
             Messages.sendError(commandSender, message.getNotOpenSteal());
             return;
         }
-        if(fromTown == null){
+        if (fromTown == null) {
             Messages.sendError(commandSender, message.getNotInTown());
             return;
         }
@@ -128,15 +129,15 @@ public class ProductCommand implements CommandExecutor {
             Messages.sendError(commandSender, message.getMustStandInTown());
             return;
         }
-        if(fromTown.equals(town)){
+        if (fromTown.equals(town)) {
             Messages.sendError(commandSender, message.getNotAllowStealOwnTown());
             return;
         }
-        if(fromNation != null && fromNation.getTowns().contains(town)){
+        if (fromNation != null && fromNation.getTowns().contains(town)) {
             Messages.sendError(commandSender, message.getNotAllowStealNationTown());
             return;
         }
-        if(!stealFromTown){
+        if (!stealFromTown) {
             TownBlock townBlock = townyAPI.getTownBlock(location);
             if (townBlock == null) {
                 Messages.sendError(commandSender, message.getMustStandInBlock());
@@ -154,17 +155,17 @@ public class ProductCommand implements CommandExecutor {
                 return;
             }
             targetBlocks.add(plotBlock.getBlock());
-        }else {
+        } else {
             Collection<TownBlock> townBlocks = town.getTownBlocks();
             List<PlayerPlotBlock> plotBlocks = ProductUtils.getSpecialBlockFromTownBlock(townBlocks, true);
-            if(plotBlocks.isEmpty()){
+            if (plotBlocks.isEmpty()) {
                 Messages.sendError(commandSender, message.getNoSpecialBlock());
                 return;
             }
             targetBlocks = plotBlocks.stream().map(PlayerPlotBlock::getBlock).collect(Collectors.toList());
         }
 
-        if(ProductUtils.isInCoolDown("STEAL:" + player.getUniqueId())){
+        if (ProductUtils.isInCoolDown("STEAL:" + player.getUniqueId())) {
             Messages.sendError(commandSender, message.getWaitForNextSteal());
             return;
         }
@@ -174,7 +175,7 @@ public class ProductCommand implements CommandExecutor {
             return;
         }
 
-        PrePlotStealEvent event = new PrePlotStealEvent(targetBlocks, player ,town, stealFromTown);
+        PrePlotStealEvent event = new PrePlotStealEvent(targetBlocks, player, town, stealFromTown);
         BukkitTools.fireEvent(event);
     }
 
@@ -206,6 +207,7 @@ public class ProductCommand implements CommandExecutor {
     private void parseInfoCommand(CommandSender commandSender, String[] subArgs) {
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
         Message message = instance.getMessage();
+        Configuration configuration = instance.getConfiguration();
         // 返回拥有的特殊地块信息(公共地块 + 个人地块)
         Player player = (Player) commandSender;
         Resident resident = TownyAPI.getInstance().getResident(player);
@@ -214,11 +216,11 @@ public class ProductCommand implements CommandExecutor {
             return;
         }
         Town town = resident.getTownOrNull();
-        if (town == null){
+        if (town == null) {
             Messages.sendError(commandSender, message.getNotInTown());
         }
         Collection<TownBlock> townBlocks = town.getTownBlocks();
-        if(townBlocks == null || townBlocks.isEmpty()){
+        if (townBlocks == null || townBlocks.isEmpty()) {
             Messages.sendError(commandSender, message.getNoSpecialBlock());
             return;
         }
@@ -233,7 +235,8 @@ public class ProductCommand implements CommandExecutor {
                 .clickEvent(ClickEvent.runCommand("/t product gain"))
         );
         body.add(Messages.blankLine());
-        body.add(Component.text("%s--%s--%s".formatted(message.getSpecialBlock(),message.getSpecialType(),message.getWhetherCoolDown()))
+        body.add(Component.text("%s--%s--%s--%s".formatted(message.getSpecialBlock(),
+                        message.getSpecialType(), message.getWhetherCoolDown(), message.getProductStorage()))
                 .color(TextColor.fromHexString("#38d415")));
         body.add(Messages.blankLine());
         for (PlayerPlotBlock haveBlock : haveBlocks) {
@@ -241,12 +244,14 @@ public class ProductCommand implements CommandExecutor {
             boolean aPublic = haveBlock.isPublic();
             String name = block.getName();
             String isPublic = aPublic ? message.getPublicType() : message.getPrivateType();
-            boolean isCoolDown = ProductUtils.isInCoolDown(aPublic ? player.getUniqueId().toString() : town.getUUID().toString()) ;
+            boolean isCoolDown = ProductUtils.isInCoolDown(aPublic ? player.getUniqueId().toString() : town.getUUID().toString());
             String coolDown = isCoolDown ? message.getCoolDown() : message.getUnCoolDown();
-            String info = "%s--%s--%s".formatted(name,isPublic,coolDown);
+            String storage = Timer.lostProductTownMap.contains(town.getUUID().toString()) ?
+                    (100 - configuration.getStealRate()) + "": 100 + "";
+            String info = "%s--%s--%s--%s".formatted(name, isPublic, coolDown, storage);
             TextComponent component = Component.text(info).color(aPublic ? NamedTextColor.DARK_GREEN : NamedTextColor.GOLD);
             body.add(component);
         }
-        Messages.sendMessages(commandSender,Messages.buildProductScreen(body));
+        Messages.sendMessages(commandSender, Messages.buildProductScreen(body));
     }
 }

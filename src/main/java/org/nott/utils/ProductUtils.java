@@ -1,10 +1,11 @@
 package org.nott.utils;
 
+import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.nott.SimpleTownyProduct;
 import org.nott.exception.ConfigWrongException;
@@ -12,21 +13,22 @@ import org.nott.model.*;
 import org.nott.model.abstracts.BaseBlock;
 import org.nott.time.Timer;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public class ProductUtils {
 
-    public static PlayerPlotBlock findSpecialTownBlock(String name){
+    public static PlayerPlotBlock findSpecialTownBlock(String typeName){
         SpecialTownBlock blockTypes = SimpleTownyProduct.INSTANCE.configuration.getBlockTypes();
         List<PublicTownBlock> publics = blockTypes.getPublics();
-        PublicTownBlock find = publics.stream().filter(publicTownBlock -> publicTownBlock.getName().equals(name)).findFirst().orElse(null);
+        PublicTownBlock find = publics.stream().filter(publicTownBlock -> publicTownBlock.getName().equals(typeName)).findFirst().orElse(null);
         if(find != null){
             return new PlayerPlotBlock(true, find);
         }
         List<PrivateTownBlock> privates = blockTypes.getPrivates();
-        PrivateTownBlock privateTownBlock = privates.stream().filter(privateTownBlock1 -> privateTownBlock1.getName().equals(name)).findFirst().orElse(null);
+        PrivateTownBlock privateTownBlock = privates.stream().filter(privateTownBlock1 -> privateTownBlock1.getName().equals(typeName)).findFirst().orElse(null);
         if(privateTownBlock != null){
             return new PlayerPlotBlock(false, privateTownBlock);
         }
@@ -50,6 +52,13 @@ public class ProductUtils {
 
     public static List<String> formatBlockCommands(BaseBlock block, Town town) throws ConfigWrongException {
         Long blockCapacity = calculatedBlockCapacity(block, town);
+        if(Timer.lostProductTownMap.containsKey(town.getUUID().toString())){
+            blockCapacity -= Timer.lostProductTownMap.get(town.getUUID().toString());
+        }
+        return formatBlockCommands(block, blockCapacity);
+    }
+
+    public static List<String> formatBlockCommands(BaseBlock block, long blockCapacity) throws ConfigWrongException {
         // 计算产能
         if(blockCapacity <= 0L){
             throw new ConfigWrongException("Calculated Block Capacity get 0,please check you product block config.");
@@ -68,7 +77,7 @@ public class ProductUtils {
                 blockTypes.getPublics().stream().anyMatch(block -> block.getName().equals(townBlock.getTypeName()));
     }
 
-    public static void executeCommand(Player player, BaseBlock block, List<String> command) {
+    public static void executeCommand(Player player, List<String> command) {
         command.forEach(s -> {
             String realCommand = PlaceholderAPI.setPlaceholders(player, s);
             if (realCommand.startsWith("[console]")) {
@@ -88,8 +97,13 @@ public class ProductUtils {
         timer.start();
     }
 
-    public static void addCoolDown(String uuid, PublicTownBlock publicTownBlock) {
-        Timer timer = new Timer(uuid, publicTownBlock.getTradeCoolDown());
+    public static void addCoolDown(String uuid, BaseBlock block) {
+        Timer timer = new Timer(uuid, block.getGainCoolDown());
+        timer.start();
+    }
+
+    public static void addCoolDown(String uuid, long cool) {
+        Timer timer = new Timer(uuid, cool);
         timer.start();
     }
 
@@ -106,5 +120,16 @@ public class ProductUtils {
             list.addAll(publics.stream().map(sb -> new PlayerPlotBlock(true, sb)).toList());
         }
         return list;
+    }
+
+    public static PlayerPlotBlock getSpecialBlockPlayerLoc(Player player){
+        TownyAPI townyAPI = TownyAPI.getInstance();
+        Location location = player.getLocation();
+        TownBlock townBlock = townyAPI.getTownBlock(location);
+        if(townBlock == null){
+            return null;
+        }
+        PlayerPlotBlock plotBlock = findSpecialTownBlock(townBlock.getTypeName());
+        return plotBlock;
     }
 }

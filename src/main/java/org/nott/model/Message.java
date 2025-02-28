@@ -68,6 +68,8 @@ public class Message {
 
     private String coolDown;
 
+    private String productStorage;
+
     private String unCoolDown;
 
     private String gainCommandHover;
@@ -113,6 +115,8 @@ public class Message {
     private String stealSuccessTitle;
 
     private String stealSuccessSubTitle;
+
+    private String beStolenWarning;
 
     private List<String> commandHelp;
 

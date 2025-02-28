@@ -4,8 +4,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.nott.SimpleTownyProduct;
 import org.nott.model.Message;
@@ -73,4 +73,13 @@ public class Messages {
         return Component.empty();
     }
 
+    public static void checkPermission(Player player, String permission) {
+        if(player.isOp() || player instanceof ConsoleCommandSender){
+            return;
+        }
+        if (!player.hasPermission(permission)) {
+            Message message = SimpleTownyProduct.INSTANCE.getMessage();
+            sendError(player, message.getCommonNoPermission());
+        }
+    }
 }

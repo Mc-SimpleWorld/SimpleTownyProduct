@@ -28,9 +28,9 @@ public class Configuration {
 
     private DataBase dataBase;
 
-    private boolean residentCanGain;
-
-    private boolean residentCanTrade;
+//    private boolean residentCanGain;
+//
+//    private boolean residentCanTrade;
 
     private boolean blockCanBeSteal;
 

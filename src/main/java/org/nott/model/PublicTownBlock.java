@@ -23,6 +23,7 @@ public class PublicTownBlock extends BaseBlock implements Product {
 
     @Override
     public void doGain(Player player) {
+        Messages.checkPermission(player, "towny.product.publicGain");
         SimpleTownyProduct.logger.info("%s starting to gain [%s] public product".formatted(player.getName(), this.getName()));
         TownyAPI towny = TownyAPI.getInstance();
         Location location = player.getLocation();
@@ -46,7 +47,7 @@ public class PublicTownBlock extends BaseBlock implements Product {
             }
             try {
                 List<String> actuallyCommand = ProductUtils.formatBlockCommands(this, town);
-                ProductUtils.executeCommand(player, this, actuallyCommand);
+                ProductUtils.executeCommand(player, actuallyCommand);
                 Messages.send(player, message.getSuccessGainProduct().formatted(this.getName()));
                 BukkitTools.fireEvent(new PlotGainProductEvent(town, this, player));
                 ProductUtils.addCoolDown(uuid, this);
@@ -57,7 +58,7 @@ public class PublicTownBlock extends BaseBlock implements Product {
     }
 
     @Override
-    public void doSteal(Player player) {
+    public void beSteal(Player player) {
         throw new MethodNotSupportException();
     }
 }

@@ -17,7 +17,12 @@ commands:
     aliases: 'stp'
 
 permissions:
-  towny.product.admin:
-    default: op
-  towny.product.player:
-    default: true
+  towny.product:
+    admin:
+      default: op
+    gain:
+      default: false
+    publicgain:
+      default: true
+    steal:
+      default: false

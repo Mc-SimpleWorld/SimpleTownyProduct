@@ -100,6 +100,6 @@ public class StealActivity {
 
 
     public void finish() {
-        Timer.runningStealActivity.remove(thief);
+        Timer.runningStealActivity.remove(thief.getUniqueId().toString());
     }
 }
