@@ -92,11 +92,6 @@ public class ProductUtils {
         });
     }
 
-    public static void addCoolDown4Town(Town town, BaseBlock block) {
-        Timer timer = new Timer(town.getUUID().toString() , block.getGainCoolDown());
-        timer.start();
-    }
-
     public static void addCoolDown(String uuid, BaseBlock block) {
         Timer timer = new Timer(uuid, block.getGainCoolDown());
         timer.start();

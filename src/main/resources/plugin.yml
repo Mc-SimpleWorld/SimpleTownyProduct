@@ -22,6 +22,8 @@ permissions:
       default: op
     gain:
       default: false
+    trade:
+      default: false
     publicgain:
       default: true
     steal:

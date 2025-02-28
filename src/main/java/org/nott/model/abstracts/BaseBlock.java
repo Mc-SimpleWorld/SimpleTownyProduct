@@ -3,6 +3,7 @@ package org.nott.model.abstracts;
 import lombok.Data;
 import org.bukkit.entity.Player;
 import org.nott.SimpleTownyProduct;
+import org.nott.exception.ConfigWrongException;
 
 import java.util.List;
 

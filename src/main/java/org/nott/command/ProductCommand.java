@@ -68,6 +68,9 @@ public class ProductCommand implements CommandExecutor {
             case "steal":
                 parseStealCommand(commandSender, subArgs);
                 break;
+            case "admin":
+                parseAdminCommand(commandSender, subArgs);
+                break;
         }
         return true;
     }
@@ -246,12 +249,29 @@ public class ProductCommand implements CommandExecutor {
             String isPublic = aPublic ? message.getPublicType() : message.getPrivateType();
             boolean isCoolDown = ProductUtils.isInCoolDown(aPublic ? player.getUniqueId().toString() : town.getUUID().toString());
             String coolDown = isCoolDown ? message.getCoolDown() : message.getUnCoolDown();
-            String storage = Timer.lostProductTownMap.contains(town.getUUID().toString()) ?
+            String storage = Timer.lostProductTownMap.containsKey(town.getUUID().toString()) ?
                     (100 - configuration.getStealRate()) + "": 100 + "";
             String info = "%s--%s--%s--%s".formatted(name, isPublic, coolDown, storage);
             TextComponent component = Component.text(info).color(aPublic ? NamedTextColor.DARK_GREEN : NamedTextColor.GOLD);
             body.add(component);
         }
         Messages.sendMessages(commandSender, Messages.buildProductScreen(body));
+    }
+
+    private void parseAdminCommand(CommandSender commandSender, String[] subArgs) {
+        Messages.checkPermission((Player) commandSender, "towny.product.admin");
+        if (subArgs.length == 0) {
+            parseHelpCommand(commandSender);
+        }
+        String[] args = CommonUtils.removeFirstElement(subArgs);
+        String adminExecuteCommand = subArgs[0];
+        switch (adminExecuteCommand){
+            // TODO Admin Command like cooldown,product, etc.,
+            case "set": parseAdminSetCommand(args);
+            break;
+        }
+    }
+
+    private void parseAdminSetCommand(String[] args) {
     }
 }

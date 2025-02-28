@@ -15,12 +15,7 @@ import java.util.List;
 
 public class Messages {
 
-    public static final String SUCCESS = "00EE00";
-    public static final String ERROR = "EE0000";
-
-    public static final String PRIVATE_COLOR = "#4EEE94";
-
-    public static final String PUBLIC_COLOR = "#FFF68F";
+    public static final String SPACE = " ";
 
     public static void sendMessages(CommandSender sender, List<Component> components) {
         for (Component component : components) {
@@ -34,7 +29,7 @@ public class Messages {
 
     public static void sendError(CommandSender sender, String messageKey, Object... args) {
         String message = format(messageKey, args);
-        message = SimpleTownyProduct.INSTANCE.getConfiguration().getPrefix() + message;
+        message = SPACE + SimpleTownyProduct.INSTANCE.getConfiguration().getPrefix() + message;
         send(sender, NamedTextColor.DARK_RED, message);
     }
 
@@ -45,7 +40,7 @@ public class Messages {
     public static void send(CommandSender sender, boolean prefix, String messageKey, Object... args) {
         String message = format(messageKey, args);
         if (prefix) {
-            message = SimpleTownyProduct.INSTANCE.getConfiguration().getPrefix() + " " + message;
+            message = SPACE + SimpleTownyProduct.INSTANCE.getConfiguration().getPrefix() + " " + message;
             send(sender, NamedTextColor.GREEN, message);
         } else {
             send(sender,NamedTextColor.GREEN, message);

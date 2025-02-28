@@ -34,6 +34,7 @@ public class PrivateTownBlock extends BaseBlock implements Product {
         TownyAPI towny = TownyAPI.getInstance();
         Resident resident = towny.getResident(player);
         Town town = resident.getTownOrNull();
+        String key = this.getName() + ":" + player.getUniqueId();
         if(town == null){
             Messages.sendError(player, message.getNotInTown());
             return;
@@ -47,27 +48,32 @@ public class PrivateTownBlock extends BaseBlock implements Product {
         boolean gainPrivateNeedStandInTown = configuration.isGainPrivateNeedStandInTown();
         // TODO Maybe useless
         boolean gainPrivateNeedStandInNation = configuration.isGainPrivateNeedStandInNation();
+
+        if(!isOwnTown){
+            Messages.sendError(player,this.getName() + "-" + message.getMustInOwnTown());
+            return;
+        }
+
         if(gainPrivateNeedStandInTown){
-            if(atTown == null || !atTown.getName().equals(town.getName()) || !isOwnTown){
+            if(!atTown.getName().equals(town.getName())){
                 SimpleTownyProduct.logger.log(Level.INFO, "Not in town. Skip.");
                 Messages.sendError(player,this.getName() + "-" + message.getMustStandInTown());
                 return;
             }
         }else if(gainPrivateNeedStandInBlock){
-            if(townBlock == null || !isOwnTown || !townBlock.getType().getName().equals(this.getName())){
+            if(townBlock == null || !townBlock.getType().getName().equals(this.getName())){
                 SimpleTownyProduct.logger.log(Level.INFO, "Not a Block. Skip.");
                 Messages.sendError(player,this.getName() + "-" + message.getMustStandInBlock());
                 return;
             }
+        } else {
+            throw new RuntimeException("Current not support other gain mode, except one: gainPrivateNeedStandInTown,gainPrivateNeedStandInTown");
         }
-        if(!isOwnTown){
-            Messages.sendError(player,this.getName() + "-" + message.getMustInOwnTown());
-            return;
-        }
+
         //  使用权限管理
         Messages.checkPermission(player, "towny.product.publicGain");
         // 判断是否在冷却中
-        if(ProductUtils.isInCoolDown(town.getUUID().toString())){
+        if(ProductUtils.isInCoolDown(key)){
             SimpleTownyProduct.logger.log(Level.INFO, "In cool down. Skip.");
             return;
         }
@@ -76,7 +82,7 @@ public class PrivateTownBlock extends BaseBlock implements Product {
             ProductUtils.executeCommand(player, actuallyCommand);
             Messages.send(player, message.getSuccessGainProduct().formatted(this.getName()));
             BukkitTools.fireEvent(new PlotGainProductEvent(town, this, player));
-            ProductUtils.addCoolDown4Town(town, this);
+            ProductUtils.addCoolDown(key, this);
         } catch (ConfigWrongException e) {
             throw new RuntimeException(e);
         }
