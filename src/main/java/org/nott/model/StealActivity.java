@@ -100,6 +100,9 @@ public class StealActivity {
 
 
     public void finish() {
+        for (BaseBlock block : blocks) {
+            block.beSteal(thief);
+        }
         Timer.runningStealActivity.remove(thief.getUniqueId().toString());
     }
 }

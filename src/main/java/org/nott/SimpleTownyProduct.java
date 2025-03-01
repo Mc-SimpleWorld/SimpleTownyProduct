@@ -13,6 +13,7 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scheduler.BukkitTask;
 import org.nott.command.ProductCommand;
 import org.nott.data.file.DataFileHandler;
 import org.nott.data.file.DataHandlerRegistrar;
@@ -26,6 +27,7 @@ import org.nott.model.enums.DbTypeEnum;
 import org.nott.time.Timer;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -53,6 +55,8 @@ public final class SimpleTownyProduct extends JavaPlugin {
 
     public DataHandlerRegistrar dataHandlerRegistrar;
 
+    public List<BukkitTask> tasks = new ArrayList<>();
+
     @Override
     public void onEnable() {
         // Plugin startup logic
@@ -64,7 +68,8 @@ public final class SimpleTownyProduct extends JavaPlugin {
         this.registerTownySubCommand();
         this.registerSpecialTownBlock();
         this.registerDataHandler();
-        SCHEDULER.runTaskAsynchronously(this, Timer::run);
+        BukkitTask bukkitTask = SCHEDULER.runTaskAsynchronously(this, Timer::run);
+        this.tasks.add(bukkitTask);
         logger.info("SimpleTownyProduct started.");
     }
 
@@ -72,8 +77,11 @@ public final class SimpleTownyProduct extends JavaPlugin {
         String storageType = this.configuration.getDataBase().getStorageType();
         if (storageType.equalsIgnoreCase(DbTypeEnum.FILE.name())) {
             this.saveResource("data/cooldown.txt", false);
+            this.saveResource("data/stolen.txt", false);
+            // TODO 改造注册方法
             this.dataHandlerRegistrar = DataHandlerRegistrar.Builder()
-                    .register(new DataFileHandler(new File(this.getDataFolder() + File.separator + "data" + File.separator + "cooldown.txt")))
+                    .register(new DataFileHandler(new File(this.getDataFolder() + File.separator + "data" + File.separator + "cooldown.txt")),
+                            new DataFileHandler(new File(this.getDataFolder() + File.separator + "data" + File.separator + "stolen.txt")))
                     .build();
         }else {
             throw new IllegalArgumentException("Not Support Other Storage Type except 'File'.");
@@ -160,6 +168,9 @@ public final class SimpleTownyProduct extends JavaPlugin {
         // Plugin shutdown logic
         // 数据持久化
         this.dataHandlerRegistrar.end();
+        for (BukkitTask task : tasks) {
+            task.cancel();
+        }
         logger.info("SimpleTownyProduct already shut down...");
     }
 

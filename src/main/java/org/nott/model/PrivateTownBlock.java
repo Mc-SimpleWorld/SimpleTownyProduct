@@ -17,6 +17,7 @@ import org.nott.model.interfaces.Product;
 import org.nott.time.TimePeriod;
 import org.nott.time.Timer;
 import org.nott.utils.Messages;
+import org.nott.utils.PermissionUtils;
 import org.nott.utils.ProductUtils;
 import org.nott.utils.TownyUtils;
 
@@ -28,6 +29,8 @@ public class PrivateTownBlock extends BaseBlock implements Product {
 
     @Override
     public void doGain(Player player) {
+        //  使用权限管理
+        PermissionUtils.checkPermission(player, "towny.product.gain");
         SimpleTownyProduct.logger.info("Start gain in [%s] PrivateTownBlock For player: [%s]".formatted(this.getName(), player.getName()));
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
         Message message = instance.getMessage();
@@ -69,9 +72,6 @@ public class PrivateTownBlock extends BaseBlock implements Product {
         } else {
             throw new RuntimeException("Current not support other gain mode, except one: gainPrivateNeedStandInTown,gainPrivateNeedStandInTown");
         }
-
-        //  使用权限管理
-        Messages.checkPermission(player, "towny.product.publicGain");
         // 判断是否在冷却中
         if(ProductUtils.isInCoolDown(key)){
             SimpleTownyProduct.logger.log(Level.INFO, "In cool down. Skip.");
@@ -83,6 +83,7 @@ public class PrivateTownBlock extends BaseBlock implements Product {
             Messages.send(player, message.getSuccessGainProduct().formatted(this.getName()));
             BukkitTools.fireEvent(new PlotGainProductEvent(town, this, player));
             ProductUtils.addCoolDown(key, this);
+            Timer.lostProductTownMap.remove(ProductUtils.stolenKey(this, town));
         } catch (ConfigWrongException e) {
             throw new RuntimeException(e);
         }
@@ -111,7 +112,7 @@ public class PrivateTownBlock extends BaseBlock implements Product {
             long stolen = Math.round(capacity * stealRate);
             List<String> commands = ProductUtils.formatBlockCommands(block, stolen);
             ProductUtils.executeCommand(player, commands);
-            Timer.lostProductTownMap.put(town.getUUID().toString(), stolen);
+            Timer.lostProductTownMap.put(ProductUtils.stolenKey(this, town), stolen);
             BukkitTools.fireEvent(new PlotStealEndEvent(town, stolen, player.getName(), this));
         } catch (ConfigWrongException e) {
             throw new RuntimeException(e);

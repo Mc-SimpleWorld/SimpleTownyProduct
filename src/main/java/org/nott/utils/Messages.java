@@ -67,14 +67,4 @@ public class Messages {
     public static Component blankLine(){
         return Component.empty();
     }
-
-    public static void checkPermission(Player player, String permission) {
-        if(player.isOp() || player instanceof ConsoleCommandSender){
-            return;
-        }
-        if (!player.hasPermission(permission)) {
-            Message message = SimpleTownyProduct.INSTANCE.getMessage();
-            sendError(player, message.getCommonNoPermission());
-        }
-    }
 }

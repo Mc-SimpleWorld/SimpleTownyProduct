@@ -3,6 +3,10 @@ package org.nott.data.file;
 import lombok.Data;
 import org.nott.SimpleTownyProduct;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author Nott
  * @date 2025-2-26
@@ -10,10 +14,10 @@ import org.nott.SimpleTownyProduct;
 
 public class DataHandlerRegistrar {
 
-    private DataHandler<?, ?> handler;
+    private final List<DataHandler<?, ?>> handlers = new ArrayList<>();
 
-    public DataHandlerRegistrar register(DataHandler<?, ?> handler) {
-        this.handler = handler;
+    public DataHandlerRegistrar register(DataHandler<?, ?>... handlers) {
+        this.handlers.addAll(Arrays.asList(handlers));
         return this;
     }
 
@@ -23,18 +27,20 @@ public class DataHandlerRegistrar {
     }
 
     public void end(){
-        this.handler.saveOnShutDown();
+        this.handlers.forEach(DataHandler::saveOnShutDown);
     }
 
     public DataHandlerRegistrar build() {
-        if (handler == null) {
-            throw new IllegalStateException("DataHandler is not registered.");
+        for (DataHandler<?, ?> handler : this.handlers) {
+            if (handler == null) {
+                throw new IllegalStateException("DataHandler is not registered.");
+            }
+            // Perform any additional initialization or validation here
+            // 初始化数据
+            handler.runOnStart();
+            SimpleTownyProduct.logger.info("DataHandler has been successfully registered and initialized.");
+            new Thread(handler::runOnBackground).start();
         }
-        // Perform any additional initialization or validation here
-        // 初始化数据
-        this.handler.runOnStart();
-        SimpleTownyProduct.logger.info("DataHandler has been successfully registered and initialized.");
-        new Thread(() -> this.handler.runOnBackground());
         return this;
     }
 

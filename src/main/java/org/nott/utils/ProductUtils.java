@@ -11,6 +11,7 @@ import org.nott.SimpleTownyProduct;
 import org.nott.exception.ConfigWrongException;
 import org.nott.model.*;
 import org.nott.model.abstracts.BaseBlock;
+import org.nott.time.TimePeriod;
 import org.nott.time.Timer;
 
 import java.sql.Time;
@@ -68,6 +69,30 @@ public class ProductUtils {
 
     public static boolean isInCoolDown(String key) {
         return Timer.timerMap.containsKey(key);
+    }
+
+    public static Long getCoolDown(String key) {
+        if (!isInCoolDown(key)) {
+            return 0L;
+        }
+        Timer timer = Timer.timerMap.get(key);
+        return timer.getEndTime() - System.currentTimeMillis();
+    }
+
+    public static String stolenKey(BaseBlock block, Town town){
+        return block.getName() + ":" + town.getUUID();
+    }
+
+    public static String playerKey(Player player){
+        return player.getUniqueId().toString();
+    }
+
+    public static String stealActivityKey(Player player){
+        return Timer.STEAL_KEY + player.getUniqueId();
+    }
+
+    public static String blockKey(BaseBlock block, Town town){
+        return block.getName() + ":" + town.getUUID();
     }
 
     public static boolean isSpecialBlock(TownBlock townBlock){

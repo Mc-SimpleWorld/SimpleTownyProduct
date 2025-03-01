@@ -1,9 +1,6 @@
 package org.nott.command;
 
 import com.palmergames.bukkit.towny.TownyAPI;
-import com.palmergames.bukkit.towny.confirmations.Confirmation;
-import com.palmergames.bukkit.towny.confirmations.ConfirmationBuilder;
-import com.palmergames.bukkit.towny.confirmations.ConfirmationHandler;
 import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
@@ -22,7 +19,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.nott.SimpleTownyProduct;
-import org.nott.event.PlotBeStealEvent;
 import org.nott.event.PrePlotStealEvent;
 import org.nott.model.Configuration;
 import org.nott.model.Message;
@@ -31,6 +27,7 @@ import org.nott.model.abstracts.BaseBlock;
 import org.nott.time.Timer;
 import org.nott.utils.CommonUtils;
 import org.nott.utils.Messages;
+import org.nott.utils.PermissionUtils;
 import org.nott.utils.ProductUtils;
 
 import java.util.ArrayList;
@@ -109,7 +106,9 @@ public class ProductCommand implements CommandExecutor {
     }
 
     private void parseStealCommand(CommandSender commandSender, String[] args) {
+        //  使用权限管理
         Player player = (Player) commandSender;
+        PermissionUtils.checkPermission(player, "towny.product.steal");
         Location location = player.getLocation();
         TownyAPI townyAPI = TownyAPI.getInstance();
         Resident resident = townyAPI.getResident(player);
@@ -247,11 +246,20 @@ public class ProductCommand implements CommandExecutor {
             boolean aPublic = haveBlock.isPublic();
             String name = block.getName();
             String isPublic = aPublic ? message.getPublicType() : message.getPrivateType();
-            boolean isCoolDown = ProductUtils.isInCoolDown(aPublic ? player.getUniqueId().toString() : town.getUUID().toString());
-            String coolDown = isCoolDown ? message.getCoolDown() : message.getUnCoolDown();
-            String storage = Timer.lostProductTownMap.containsKey(town.getUUID().toString()) ?
-                    (100 - configuration.getStealRate()) + "": 100 + "";
-            String info = "%s--%s--%s--%s".formatted(name, isPublic, coolDown, storage);
+            String timerKey = aPublic ? ProductUtils.playerKey(player) :
+                    ProductUtils.blockKey(block, town);
+            boolean isCoolDown = ProductUtils.isInCoolDown(timerKey);
+            String coolDownState;
+            if(isCoolDown){
+                Long coolDown = ProductUtils.getCoolDown(timerKey);
+                coolDownState = message.getCoolDown().formatted(coolDown / 1000 / 60);
+            }else {
+                coolDownState = message.getUnCoolDown();
+            }
+            String stolenKey = ProductUtils.stolenKey(block, town);
+            String storage = Timer.lostProductTownMap.containsKey(stolenKey) ?
+                    (100 - configuration.getStealRate()) + "" : 100 + "%";
+            String info = "%s--%s--%s--%s".formatted(name, isPublic, coolDownState, storage);
             TextComponent component = Component.text(info).color(aPublic ? NamedTextColor.DARK_GREEN : NamedTextColor.GOLD);
             body.add(component);
         }
@@ -259,7 +267,7 @@ public class ProductCommand implements CommandExecutor {
     }
 
     private void parseAdminCommand(CommandSender commandSender, String[] subArgs) {
-        Messages.checkPermission((Player) commandSender, "towny.product.admin");
+        PermissionUtils.checkPermission((Player) commandSender, "towny.product.admin");
         if (subArgs.length == 0) {
             parseHelpCommand(commandSender);
         }

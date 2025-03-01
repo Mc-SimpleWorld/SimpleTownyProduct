@@ -14,6 +14,7 @@ import org.nott.exception.MethodNotSupportException;
 import org.nott.model.abstracts.BaseBlock;
 import org.nott.model.interfaces.Product;
 import org.nott.utils.Messages;
+import org.nott.utils.PermissionUtils;
 import org.nott.utils.ProductUtils;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class PublicTownBlock extends BaseBlock implements Product {
 
     @Override
     public void doGain(Player player) {
-        Messages.checkPermission(player, "towny.product.publicGain");
+        PermissionUtils.checkPermission(player, "towny.product.publicGain");
         SimpleTownyProduct.logger.info("%s starting to gain [%s] public product".formatted(player.getName(), this.getName()));
         TownyAPI towny = TownyAPI.getInstance();
         Location location = player.getLocation();

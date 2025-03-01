@@ -90,7 +90,8 @@ public class BlockStealEventListener implements Listener {
                     Title title = Title.title(mainTitle, subtitle, Title.Times.times(Duration.ofSeconds(3), Duration.ofSeconds(5), Duration.ofMillis(2)));
                     player.hideBossBar(bar);
                     player.showTitle(title);
-                    activity.finish();
+                    // TODO Bukkit命令无法异步使用
+                    BukkitTools.fireEvent(new PlotStealEndEvent(true,activity));
                     break;
                 }
                 // 如果偷取事件被取消，则bossbar也取消
@@ -137,26 +138,27 @@ public class BlockStealEventListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockStealActInterruptEvent(PlotStealEndEvent event){
-        SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
-        String thiefName = event.getThiefName();
-        Long lost = event.getLost();
-        Town town = event.getTown();
-        BaseBlock block = event.getBlock();
-        // TODO 发送给拥有gain权限的人
-        // 现在发给在线的市长
-        Resident mayor = town.getMayor();
-        if (mayor.isOnline()) {
-            Messages.send(mayor.getPlayer(), instance.getMessage().getBeStolenWarning()
-                    .formatted(town.getName(), block.getName(), thiefName, lost));
-            return;
-        }
-        SimpleTownyProduct.logger.info("PlotStealEndEvent fired");
+    public void onBlockStealActInterruptEvent(PlotStealInterruptEvent event){
+//        SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
+//        String thiefName = event.getThiefName();
+//        Long lost = event.getLost();
+//        Town town = event.getTown();
+//        BaseBlock block = event.getBlock();
+//        // TODO 发送给拥有gain权限的人
+//        // 现在发给在线的市长
+//        Resident mayor = town.getMayor();
+//        if (mayor.isOnline()) {
+//            Messages.send(mayor.getPlayer(), instance.getMessage().getBeStolenWarning()
+//                    .formatted(town.getName(), block.getName(), thiefName, lost));
+//            return;
+//        }
+//        SimpleTownyProduct.logger.info("PlotStealEndEvent fired");
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockStealActEndEvent(PlotStealInterruptEvent event){
+    public void onBlockStealActEndEvent(PlotStealEndEvent event){
         SimpleTownyProduct.logger.info("PlotStealEndEvent fired");
+        event.getStealActivity().finish();
     }
 
     @EventHandler(priority = EventPriority.NORMAL)

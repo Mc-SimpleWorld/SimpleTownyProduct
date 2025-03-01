@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.nott.SimpleTownyProduct;
-import java.io.File;
-import java.io.IOException;
+
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,6 +33,35 @@ public class FileUtils {
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Error loading yaml file", e);
             throw e;
+        }
+    }
+
+    public static Map<String,String> readKeyValueFile(File file) {
+        Map<String,String> kvMap = new HashMap<>();
+        try(BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null){
+                String[] keyVal = line.split("=");
+                if(keyVal.length == 2){
+                    kvMap.put(keyVal[0].trim(), keyVal[1].trim());
+                }
+            }
+        } catch (Exception e){
+            SimpleTownyProduct.logger.severe(e.getMessage());
+        }
+        return kvMap;
+    }
+
+    public static void emptyTxt(File file) throws IOException {
+        FileWriter fileWriter = null;
+        try {
+            fileWriter = new FileWriter(file);
+            fileWriter.write("");
+            fileWriter.flush();
+        } finally {
+            if(fileWriter != null){
+                fileWriter.close();
+            }
         }
     }
 }
