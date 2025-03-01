@@ -1,61 +1,103 @@
 # Config version: 0.0.1
 ## Productive configuration
+## 勿修改
 version: 0.0.1
 prefix: 'SimpleTownyProduct'
 locale: 'zh_CN'
 
+## 数据备份
+## Data back up
 data_base:
+  # 目前只有文件存储类型
   # Only 'File' for now.
   storage_type: File
+  # 备份时间，设置0以禁用
   # Back up minute set 0 to disable.
   back_up: 1
 
+
 # Block types configuration
 # This configuration is used to define the block types that can be traded in the town.
+# 一个城镇可以拥有的资源区块类型
 per_town_types: 2
+
 #resident_can_gain: false
 #resident_can_trade: false
 
+# 是否需要站在区块内获取产出
 gain_private_need_stand_in_block: false
+
+# 是否需要站在城镇内获取产出
 # if gain_need_stand_in_block is flase,wheather the player need to stand in the town to doGain the block type
 gain_private_need_stand_in_town: true
+
+# 是否需要站在国家内获取产出【未启用】
 # if gain_need_stand_in_town is flase,wheather the player need to stand in the nation to doGain the block type
 gain_private_need_stand_in_nation: true
 
 # Need SiegeWar Plugins
+# 是否资源可被掠夺【未启用】
 can_be_plundered: true
-# Other town can steal product
-block_can_be_steal: true
-# Steal rate on next gain
-steal_rate: 5
-# How long
-steal_need_stand_in_time: 60s
-steal_cool_down: 5hour
-# if steal_need_in_block ture, the thief should stand on special block, either in town
-steal_need_in_block: true
-steal_temp_out_second: 5
+# 掠夺启用时，可掠夺以后多少次的产出数量
 # if can_be_plundered is true, how many block types doGain times can be plundered in next.
 plunder_gain_times: 1
 
+# Other town can steal product
+# 资源是否可被偷窃
+block_can_be_steal: true
+
+# Steal rate on next gain
+# 偷窃比例：基于下次收获的数量
+steal_rate: 5
+# How long
+# 偷窃需要站在范围内多久
+steal_need_stand_in_time: 60s
+# 偷窃冷却，冷却单位：s,min,hour,day,week
+steal_cool_down: 5hour
+
+# 偷窃是否需要站在区块内
+# if steal_need_in_block ture, the thief should stand on special block, either in town
+steal_need_in_block: true
+# 偷窃中可离开目标区块的秒数
+steal_temp_out_second: 5
+
+
 # Block types
+# 资源区块类型 公共：publics 私有：private
 block_types:
   # Public block types
   # All player can gain products from the public block types
   publics:
+      # 区块的名字，必须唯一
     - name: '驿站'
       map_key: 'p'
+      # 一个城镇可以拥有几个同类型区块
       limit_per_town: 1
+      # 一个国家可以拥有几个同类型区块
       same_nation_max: 2
+      # 区块价格
       base_price: 1000
+      # 区块出售[未启用]
       base_sell_price: 500
+      # 区块资源基数
       base_gain_number: 100
+      # 根据城镇等级提升区块资源的倍数
       town_level_exponent: 0
+      # 是否可设为出售[未启用]
       for_sale_able: false
+      # 互斥区块类型
       repel_block_type:
         - '驿站'
+      # 是否可交易[未启用]
       trade_able: false
+      # 产出冷却 冷却单位：s,min,hour,day,week
       gain_cool_down: '1hour'
+      # 交易冷却
       trade_cool_down: '1day'
+      # 获取产出时实际执行的命令
+      # [console] 以控制台身份执行
+      # [player] 以玩家身份执行
+      # 支持papi变量
       gain_command:
         - '[console]money grant %player_name% 100'
   # Private block types
