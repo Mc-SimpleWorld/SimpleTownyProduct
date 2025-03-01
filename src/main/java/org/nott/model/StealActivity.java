@@ -100,9 +100,19 @@ public class StealActivity {
 
 
     public void finish() {
+        if(this.isInterrupt){
+            SimpleTownyProduct.logger.info("activity isInterrupt");
+            return;
+        }
         for (BaseBlock block : blocks) {
             block.beSteal(thief);
         }
+        Message message = SimpleTownyProduct.INSTANCE.getMessage();
         Timer.runningStealActivity.remove(thief.getUniqueId().toString());
+        final Component mainTitle = Component.text(message.getStealSuccessTitle(), NamedTextColor.GREEN);
+        final Component subtitle = Component.text(message.getStealSuccessSubTitle(), NamedTextColor.GREEN);
+        Title title = Title.title(mainTitle, subtitle, Title.Times.times(Duration.ofSeconds(3), Duration.ofSeconds(5), Duration.ofMillis(2)));
+        thief.showTitle(title);
+        SimpleTownyProduct.logger.info("activity finish");
     }
 }

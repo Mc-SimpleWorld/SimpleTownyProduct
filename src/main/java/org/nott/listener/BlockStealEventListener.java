@@ -73,7 +73,7 @@ public class BlockStealEventListener implements Listener {
         List<BaseBlock> targetBlock = plotBeStealEvent.getTargetBlock();
         StealActivity activity = new StealActivity(plotBeStealEvent);
         // 添加偷窃冷却
-        ProductUtils.addCoolDown(Timer.STEAL_KEY + player.getUniqueId(), TimePeriod.fromStringGetVal(configuration.getStealCoolDown()));
+         ProductUtils.addCoolDown(Timer.STEAL_KEY + player.getUniqueId(), TimePeriod.fromStringGetVal(configuration.getStealCoolDown()));
         // 若小偷在偷取中PVP死亡，将会被送入监狱并取消偷窃事件
         town.setPVP(true);
         SimpleTownyProduct.SCHEDULER.runTaskAsynchronously(instance, () -> {
@@ -82,16 +82,15 @@ public class BlockStealEventListener implements Listener {
             // 创建进度条（bossbar）
             final BossBar bar = BossBar.bossBar(Component.text(message.getStealProgressTitle().formatted(second + "s"), NamedTextColor.DARK_GREEN), 1, BossBar.Color.BLUE, BossBar.Overlay.PROGRESS);
             player.showBossBar(bar);
+            final Component startTitle = Component.text(message.getStartStealBlockTitle(), NamedTextColor.GOLD);
+            final Component startSubtitle = Component.text(message.getStartStealBlockSubTitle(), NamedTextColor.DARK_GRAY);
+            Title begin = Title.title(startTitle, startSubtitle, Title.Times.times(Duration.ofSeconds(2), Duration.ofSeconds(2), Duration.ofMillis(1)));
+            player.showTitle(begin);
             while (true){
                 long currented = System.currentTimeMillis();
+                // 时间结束
                 if(currented >= start + val){
-                    final Component mainTitle = Component.text(message.getStealSuccessTitle(), NamedTextColor.GREEN);
-                    final Component subtitle = Component.text(message.getStealSuccessSubTitle(), NamedTextColor.GREEN);
-                    Title title = Title.title(mainTitle, subtitle, Title.Times.times(Duration.ofSeconds(3), Duration.ofSeconds(5), Duration.ofMillis(2)));
                     player.hideBossBar(bar);
-                    player.showTitle(title);
-                    // TODO Bukkit命令无法异步使用
-                    BukkitTools.fireEvent(new PlotStealEndEvent(true,activity));
                     break;
                 }
                 // 如果偷取事件被取消，则bossbar也取消
@@ -104,6 +103,8 @@ public class BlockStealEventListener implements Listener {
                     player.showTitle(title);
                     break;
                 }
+
+                // Boss条
                 long left = (start + val - currented) / 1000;
                 double progress = (double) (currented - start) / val;
                 bar.name(Component.text(message.getStealProgressTitle().formatted(left + "s")));
@@ -113,8 +114,8 @@ public class BlockStealEventListener implements Listener {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
+                // 检查小偷位置
                 activity.checkThiefIfOut();
-
             }
 
         });
@@ -135,40 +136,41 @@ public class BlockStealEventListener implements Listener {
                 }
             }
         });
+        SimpleTownyProduct.SCHEDULER.runTaskLater(instance, activity::finish, val / 1000 * 20 + 20);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockStealActInterruptEvent(PlotStealInterruptEvent event){
-//        SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
-//        String thiefName = event.getThiefName();
-//        Long lost = event.getLost();
-//        Town town = event.getTown();
-//        BaseBlock block = event.getBlock();
-//        // TODO 发送给拥有gain权限的人
-//        // 现在发给在线的市长
-//        Resident mayor = town.getMayor();
-//        if (mayor.isOnline()) {
-//            Messages.send(mayor.getPlayer(), instance.getMessage().getBeStolenWarning()
-//                    .formatted(town.getName(), block.getName(), thiefName, lost));
-//            return;
-//        }
-//        SimpleTownyProduct.logger.info("PlotStealEndEvent fired");
+        // TODO 发送信息
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockStealActEndEvent(PlotStealEndEvent event){
+    public void onBlockStealActEndEvent(PlotStealEndEvent event) {
         SimpleTownyProduct.logger.info("PlotStealEndEvent fired");
-        event.getStealActivity().finish();
+        SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
+        String thiefName = event.getThiefName();
+        Long lost = event.getLost();
+        Town town = event.getTown();
+        BaseBlock block = event.getBlock();
+        // TODO 发送给拥有gain权限的人
+        // 现在发给在线的市长
+        Resident mayor = town.getMayor();
+        if (mayor.isOnline()) {
+            Messages.send(mayor.getPlayer(), instance.getMessage().getBeStolenWarning()
+                    .formatted(town.getName(), block.getName(), thiefName, lost));
+            return;
+        }
+        SimpleTownyProduct.logger.info("PlotStealEndEvent fired");
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onStealingPlayPvPDeathEventListener(PlayerDeathEvent event) {
         EntityDamageEvent entityDamageEvent = event.getEntity().getLastDamageCause();
-        Entity entity = entityDamageEvent.getDamageSource().getCausingEntity();
+//        Entity entity = entityDamageEvent.getDamageSource().getCausingEntity();
         Player player = event.getPlayer();
-        if (entity instanceof Player && Timer.runningStealActivity.containsKey(player.getUniqueId().toString())) {
+        if (Timer.runningStealActivity.containsKey(player.getUniqueId().toString())) {
             StealActivity activity = Timer.runningStealActivity.get(player.getUniqueId().toString());
-            activity.setInterruptReason("Thief death.");
+            activity.setInterruptReason(SimpleTownyProduct.INSTANCE.getMessage().getStealFailDeath());
             activity.setInterrupt(true);
             Town town = activity.getTargetTown();
             TownyAPI townyAPI = TownyAPI.getInstance();

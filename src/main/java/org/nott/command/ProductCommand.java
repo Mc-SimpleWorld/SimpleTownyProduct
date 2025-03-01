@@ -109,6 +109,7 @@ public class ProductCommand implements CommandExecutor {
         //  使用权限管理
         Player player = (Player) commandSender;
         PermissionUtils.checkPermission(player, "towny.product.steal");
+        // TODO  判断小偷是否仍为监禁状态
         Location location = player.getLocation();
         TownyAPI townyAPI = TownyAPI.getInstance();
         Resident resident = townyAPI.getResident(player);
@@ -157,6 +158,12 @@ public class ProductCommand implements CommandExecutor {
                 return;
             }
             targetBlocks.add(plotBlock.getBlock());
+
+            if (ProductUtils.isInCoolDown(ProductUtils.stolenKey(plotBlock.getBlock(), town))) {
+                Messages.sendError(commandSender, message.getTargetCoolingDown());
+                return;
+            }
+
         } else {
             Collection<TownBlock> townBlocks = town.getTownBlocks();
             List<PlayerPlotBlock> plotBlocks = ProductUtils.getSpecialBlockFromTownBlock(townBlocks, true);
@@ -165,15 +172,15 @@ public class ProductCommand implements CommandExecutor {
                 return;
             }
             targetBlocks = plotBlocks.stream().map(PlayerPlotBlock::getBlock).collect(Collectors.toList());
+
+            if (ProductUtils.isInCoolDown(ProductUtils.stolenKey(town))) {
+                Messages.sendError(commandSender, message.getTargetCoolingDown());
+                return;
+            }
         }
 
         if (ProductUtils.isInCoolDown("STEAL:" + player.getUniqueId())) {
             Messages.sendError(commandSender, message.getWaitForNextSteal());
-            return;
-        }
-
-        if (ProductUtils.isInCoolDown(town.getUUID().toString())) {
-            Messages.sendError(commandSender, message.getTargetCoolingDown());
             return;
         }
 
@@ -258,7 +265,7 @@ public class ProductCommand implements CommandExecutor {
             }
             String stolenKey = ProductUtils.stolenKey(block, town);
             String storage = Timer.lostProductTownMap.containsKey(stolenKey) ?
-                    (100 - configuration.getStealRate()) + "" : 100 + "%";
+                    (100 - configuration.getStealRate()) + "%" : 100 + "%";
             String info = "%s--%s--%s--%s".formatted(name, isPublic, coolDownState, storage);
             TextComponent component = Component.text(info).color(aPublic ? NamedTextColor.DARK_GREEN : NamedTextColor.GOLD);
             body.add(component);

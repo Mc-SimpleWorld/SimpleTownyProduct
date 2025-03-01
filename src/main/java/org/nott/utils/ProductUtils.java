@@ -83,6 +83,10 @@ public class ProductUtils {
         return block.getName() + ":" + town.getUUID();
     }
 
+    public static String stolenKey(Town town){
+        return "stolen" + ":" + town.getUUID();
+    }
+
     public static String playerKey(Player player){
         return player.getUniqueId().toString();
     }

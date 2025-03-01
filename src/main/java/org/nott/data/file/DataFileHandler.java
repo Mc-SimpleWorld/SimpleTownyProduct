@@ -31,10 +31,10 @@ public class DataFileHandler implements DataHandler<Map<String, String>, File> {
 
     @Override
     public Map<String, String> read() {
-        SimpleTownyProduct.logger.info(this.file.getName() + "Read data Start...");
+//        SimpleTownyProduct.logger.info(this.file.getName() + "Read data Start...");
         lock.readLock().lock();
         try {
-            SimpleTownyProduct.logger.info(this.file.getName() + "Read data End...");
+//            SimpleTownyProduct.logger.info(this.file.getName() + "Read data End...");
             return FileUtils.readKeyValueFile(file);
         } finally {
             lock.readLock().unlock();
@@ -43,9 +43,8 @@ public class DataFileHandler implements DataHandler<Map<String, String>, File> {
 
     @Override
     public void write(Map<String, String> d) {
-        SimpleTownyProduct.logger.info("Write data Start...");
+//        SimpleTownyProduct.logger.info("Write data Start...");
         lock.writeLock().lock();
-        // TODO 判断是否需要清空原数据
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             for (Map.Entry<String, String> entry : d.entrySet()) {
                 writer.write(entry.getKey() + "=" + entry.getValue());
@@ -56,7 +55,7 @@ public class DataFileHandler implements DataHandler<Map<String, String>, File> {
         } finally {
             lock.writeLock().unlock();
         }
-        SimpleTownyProduct.logger.info("Write data finish...");
+//        SimpleTownyProduct.logger.info("Write data finish...");
     }
 
     @Override
@@ -79,7 +78,7 @@ public class DataFileHandler implements DataHandler<Map<String, String>, File> {
     @Override
     public void saveOnShutDown() {
         saveData();
-        SimpleTownyProduct.logger.info(this.file.getName() + "Store data successfully..");
+        SimpleTownyProduct.logger.info(this.file.getName() + " Store data successfully..");
     }
 
     private void saveData() {
@@ -126,6 +125,6 @@ public class DataFileHandler implements DataHandler<Map<String, String>, File> {
                 Timer.lostProductTownMap.put(key, Long.parseLong(data));
             }
         }
-        SimpleTownyProduct.logger.info(this.file.getName() + "Set up data successfully..");
+        SimpleTownyProduct.logger.info(this.file.getName() + " Set up data successfully..");
     }
 }

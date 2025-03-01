@@ -29,7 +29,7 @@ public class Messages {
 
     public static void sendError(CommandSender sender, String messageKey, Object... args) {
         String message = format(messageKey, args);
-        message = SPACE + SimpleTownyProduct.INSTANCE.getConfiguration().getPrefix() + message;
+        message = "[" + SimpleTownyProduct.INSTANCE.getConfiguration().getPrefix() + "] " + message;
         send(sender, NamedTextColor.DARK_RED, message);
     }
 
@@ -40,7 +40,7 @@ public class Messages {
     public static void send(CommandSender sender, boolean prefix, String messageKey, Object... args) {
         String message = format(messageKey, args);
         if (prefix) {
-            message = SPACE + SimpleTownyProduct.INSTANCE.getConfiguration().getPrefix() + " " + message;
+            message = "[" + SimpleTownyProduct.INSTANCE.getConfiguration().getPrefix() + "] " + message;
             send(sender, NamedTextColor.GREEN, message);
         } else {
             send(sender,NamedTextColor.GREEN, message);
@@ -67,4 +67,6 @@ public class Messages {
     public static Component blankLine(){
         return Component.empty();
     }
+
+//    public void showTitle(Player player, Component... components, )
 }

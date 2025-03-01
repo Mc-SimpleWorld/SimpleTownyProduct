@@ -108,6 +108,12 @@ public class Message {
 
     private String thiefOutTownWarning;
 
+    private String startStealBlockTitle;
+
+    private String startStealBlockSubTitle;
+
+    private String stealFailDeath;
+
     private String stealInterruptForOut;
 
     private String stealFailTitle;
