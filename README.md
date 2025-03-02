@@ -26,6 +26,7 @@
 | towny.product.publicgain | 从公共资源区块获取产出的权限 |
 | towny.product.gain       | 从私有资源区块获取产出的权限 |
 | towny.product.steal      | 偷窃权限           |
+| towny.product.admin      | 管理权限           |
 
 ## 安装 install
 
