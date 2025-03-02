@@ -144,7 +144,7 @@ block_types:
       gain_command:
         - '[console]give %player_name% tnt {{PRODUCT_NUMBER}}'
 
-
+# TODO 随机增减益事件
 #event_weeks_day:
 #event_time: '14:00'
 #events:
