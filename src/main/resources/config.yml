@@ -1,8 +1,18 @@
+#  _____ _                 _   _______                        _____               _            _
+# / ____(_)               | | |__   __|                      |  __ \             | |          | |
+# | (___  _ _ __ ___  _ __ | | ___| | _____      ___ __  _   _| |__) | __ ___   __| |_   _  ___| |_
+#  \___ \| | '_ ` _ \| '_ \| |/ _ \ |/ _ \ \ /\ / / '_ \| | | |  ___/ '__/ _ \ / _` | | | |/ __| __|
+#  ____) | | | | | | | |_) | |  __/ | (_) \ V  V /| | | | |_| | |   | | | (_) | (_| | |_| | (__| |_
+# |_____/|_|_| |_| |_| .__/|_|\___|_|\___/ \_/\_/ |_| |_|\__, |_|   |_|  \___/ \__,_|\__,_|\___|\__|
+#                    | |                                  __/ |
+#                    |_|                                 |___/
 # Config version: 0.0.1
 ## Productive configuration
 ## 勿修改
 version: 0.0.1
 prefix: 'SimpleTownyProduct'
+
+# 语言zh_CN en_US
 locale: 'zh_CN'
 
 ## 数据备份
@@ -14,7 +24,6 @@ data_base:
   # 备份时间，设置0以禁用
   # Back up minute set 0 to disable.
   back_up: 1
-
 
 # Block types configuration
 # This configuration is used to define the block types that can be traded in the town.
@@ -42,10 +51,10 @@ can_be_plundered: true
 # if can_be_plundered is true, how many block types doGain times can be plundered in next.
 plunder_gain_times: 1
 
+
 # Other town can steal product
 # 资源是否可被偷窃
 block_can_be_steal: true
-
 # Steal rate on next gain
 # 偷窃比例：基于下次收获的数量
 steal_rate: 5
@@ -54,7 +63,6 @@ steal_rate: 5
 steal_need_stand_in_time: 60s
 # 偷窃冷却，冷却单位：s,min,hour,day,week
 steal_cool_down: 5hour
-
 # 偷窃是否需要站在区块内
 # if steal_need_in_block ture, the thief should stand on special block, either in town
 steal_need_in_block: true

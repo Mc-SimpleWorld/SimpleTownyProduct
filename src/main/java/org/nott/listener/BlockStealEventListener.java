@@ -141,7 +141,15 @@ public class BlockStealEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockStealActInterruptEvent(PlotStealInterruptEvent event){
-        // TODO 发送信息
+        // 发送信息
+        Town currentTown = event.getCurrentTown();
+        String message = event.getMessage();
+        Player thief = event.getThief();
+        Message instanceMessage = SimpleTownyProduct.INSTANCE.getMessage();
+        Resident mayor = currentTown.getMayor();
+        if (mayor.isOnline()) {
+            Messages.send(mayor.getPlayer(), instanceMessage.getStealInterruptMessage(), thief.getName(), message);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

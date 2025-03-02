@@ -5,6 +5,7 @@ import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
+import com.palmergames.bukkit.towny.utils.JailUtil;
 import com.palmergames.bukkit.util.BukkitTools;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -109,7 +110,6 @@ public class ProductCommand implements CommandExecutor {
         //  使用权限管理
         Player player = (Player) commandSender;
         PermissionUtils.checkPermission(player, "towny.product.steal");
-        // TODO  判断小偷是否仍为监禁状态
         Location location = player.getLocation();
         TownyAPI townyAPI = TownyAPI.getInstance();
         Resident resident = townyAPI.getResident(player);
@@ -117,15 +117,16 @@ public class ProductCommand implements CommandExecutor {
         Nation fromNation = townyAPI.getResidentNationOrNull(resident);
         Town town = townyAPI.getTown(location);
         Message message = SimpleTownyProduct.INSTANCE.getMessage();
+        boolean beJailed = JailUtil.isQueuedToBeJailed(resident);
+        if(beJailed){
+            Messages.sendError(commandSender, message.getStealStillJailed());
+            return;
+        }
         Configuration configuration = SimpleTownyProduct.INSTANCE.getConfiguration();
         boolean stealFromTown = !configuration.isStealNeedInBlock();
         List<BaseBlock> targetBlocks = new ArrayList<>();
         if (!configuration.isBlockCanBeSteal()) {
             Messages.sendError(commandSender, message.getNotOpenSteal());
-            return;
-        }
-        if (fromTown == null) {
-            Messages.sendError(commandSender, message.getNotInTown());
             return;
         }
         if (town == null) {
@@ -179,7 +180,7 @@ public class ProductCommand implements CommandExecutor {
             }
         }
 
-        if (ProductUtils.isInCoolDown("STEAL:" + player.getUniqueId())) {
+        if (ProductUtils.isInCoolDown(ProductUtils.stealActivityKey(player))) {
             Messages.sendError(commandSender, message.getWaitForNextSteal());
             return;
         }

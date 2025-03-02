@@ -112,6 +112,8 @@ public class Message {
 
     private String startStealBlockSubTitle;
 
+    private String stealStillJailed;
+
     private String stealFailDeath;
 
     private String stealInterruptForOut;
@@ -119,6 +121,8 @@ public class Message {
     private String stealFailTitle;
 
     private String stealSuccessTitle;
+
+    private String stealInterruptMessage;
 
     private String stealSuccessSubTitle;
 
