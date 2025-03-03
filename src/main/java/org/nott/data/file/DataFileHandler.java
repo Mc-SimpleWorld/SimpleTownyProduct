@@ -2,14 +2,12 @@ package org.nott.data.file;
 
 import org.nott.SimpleTownyProduct;
 import org.nott.model.Configuration;
-import org.nott.time.Timer;
 import org.nott.utils.FileUtils;
 
 import java.io.*;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * @author Nott
@@ -19,43 +17,26 @@ public class DataFileHandler implements DataHandler<Map<String, String>, File> {
 
     private final File file;
 
+    private final DataSource<Map<String, String>> dataSource;
 
-    // todo 多文件注册
-//    private final Map dataSource;
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-
-    public DataFileHandler(File file) {
+    private DataFileHandler(File file, DataSource<Map<String, String>> dataSource) {
         this.file = file;
+        this.dataSource = dataSource;
+    }
+
+    public static DataFileHandler build(File file, DataSource<Map<String, String>> dataSource){
+        return new DataFileHandler(file, dataSource);
     }
 
 
     @Override
     public Map<String, String> read() {
-//        SimpleTownyProduct.logger.info(this.file.getName() + "Read data Start...");
-        lock.readLock().lock();
-        try {
-//            SimpleTownyProduct.logger.info(this.file.getName() + "Read data End...");
-            return FileUtils.readKeyValueFile(file);
-        } finally {
-            lock.readLock().unlock();
-        }
+        return FileUtils.readByKeyValue(file);
     }
 
     @Override
     public void write(Map<String, String> d) {
-//        SimpleTownyProduct.logger.info("Write data Start...");
-        lock.writeLock().lock();
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            for (Map.Entry<String, String> entry : d.entrySet()) {
-                writer.write(entry.getKey() + "=" + entry.getValue());
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            SimpleTownyProduct.logger.severe(e.getMessage());
-        } finally {
-            lock.writeLock().unlock();
-        }
-//        SimpleTownyProduct.logger.info("Write data finish...");
+        FileUtils.writeByKeyValue(file, d);
     }
 
     @Override
@@ -86,45 +67,14 @@ public class DataFileHandler implements DataHandler<Map<String, String>, File> {
         if (data.isEmpty()) {
             data = new HashMap<>();
         }
-        if (file.getName().contains("cooldown")) {
-            for (String uuid : Timer.timerMap.keySet()) {
-                Timer timer = Timer.timerMap.get(uuid);
-                long endTime = timer.getEndTime();
-                long period = endTime - System.currentTimeMillis();
-                if (period > 0) {
-                    data.put(uuid, period + "");
-                }
-            }
-        }
-        if (file.getName().contains("stolen")) {
-            for (String uuid : Timer.lostProductTownMap.keySet()) {
-                Long rate = Timer.lostProductTownMap.get(uuid);
-                if (rate > 0) {
-                    data.put(uuid, rate + "");
-
-                }
-            }
-        }
+        data.putAll(this.dataSource.getDataInMemory());
 
         this.write(data);
     }
 
     @Override
     public void runOnStart() {
-        Map<String, String> read = this.read();
-        if (file.getName().contains("cooldown")) {
-            for (String key : read.keySet()) {
-                String data = read.get(key);
-                Timer timer = new Timer(key, Long.parseLong(data));
-                timer.start();
-            }
-        }
-        if (file.getName().contains("stolen")) {
-            for (String key : read.keySet()) {
-                String data = read.get(key);
-                Timer.lostProductTownMap.put(key, Long.parseLong(data));
-            }
-        }
+        this.dataSource.putDataToMemory();
         SimpleTownyProduct.logger.info(this.file.getName() + " Set up data successfully..");
     }
 }

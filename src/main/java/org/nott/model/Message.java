@@ -128,6 +128,16 @@ public class Message {
 
     private String beStolenWarning;
 
+    private String townNotFound;
+
+    private String blockNotFound;
+
+    private String residentNotFound;
+
+    private String successSetBlockCool;
+
+    private String successSetBlockCoolForPlayer;
+
     private List<String> commandHelp;
 
     private List<String> commandAdminHelp;

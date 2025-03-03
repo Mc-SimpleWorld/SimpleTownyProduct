@@ -37,6 +37,20 @@ public class ProductUtils {
 
     }
 
+    public static PlayerPlotBlock findSpecialTownBlock(String typeName, Town town){
+        PlayerPlotBlock block = findSpecialTownBlock(typeName);
+        if(block == null){
+            return null;
+        }
+        Collection<TownBlock> townBlocks = town.getTownBlocks();
+        TownBlock townBlock = townBlocks.stream().filter(tb -> typeName.equals(tb.getTypeName())).findFirst().orElse(null);
+        if(townBlock == null){
+            return null;
+        }
+        return block;
+
+    }
+
     public static Long calculatedBlockCapacity(BaseBlock block, Town town) throws ConfigWrongException{
         Integer baseGainNumber = block.getBaseGainNumber();
         if(baseGainNumber <= 0){
@@ -71,6 +85,15 @@ public class ProductUtils {
         return Timer.timerMap.containsKey(key);
     }
 
+    public static void setCoolDown(String key, Long val) {
+        Timer.timerMap.remove(key);
+        Timer timer = Timer.timers.stream().filter(r -> "key".equals(r.getKey())).findFirst().orElse(null);
+        if(timer != null){
+            Timer.timers.remove(timer);
+        }
+        new Timer(key, val).start();
+    }
+
     public static Long getCoolDown(String key) {
         if (!isInCoolDown(key)) {
             return 0L;
@@ -97,6 +120,10 @@ public class ProductUtils {
 
     public static String blockKey(BaseBlock block, Town town){
         return block.getName() + ":" + town.getUUID();
+    }
+
+    public static String publicBlockKey(BaseBlock block, Player player){
+        return block.getName() + ":" + player.getUniqueId();
     }
 
     public static boolean isSpecialBlock(TownBlock townBlock){

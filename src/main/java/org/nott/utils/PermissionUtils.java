@@ -1,5 +1,6 @@
 package org.nott.utils;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
@@ -21,6 +22,20 @@ public class PermissionUtils {
     public static void revokePermission(Player player, Plugin plugin, String permission) {
         PermissionAttachment attachment = player.addAttachment(plugin);
         attachment.setPermission(permission, false);
+    }
+
+    public static boolean hasPermission(CommandSender sender, String permission) {
+        return hasPermission((Player) sender, permission);
+    }
+
+    public static boolean hasPermission(Player player, String permission) {
+        if(player.isOp() || player instanceof ConsoleCommandSender){
+            return true;
+        }
+        if (!player.hasPermission(permission)) {
+            return false;
+        }
+        return false;
     }
 
     public static void checkPermission(Player player, String permission) {

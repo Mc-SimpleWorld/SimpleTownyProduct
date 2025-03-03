@@ -40,8 +40,8 @@ public class PublicTownBlock extends BaseBlock implements Product {
         SpecialTownBlock blockTypes = instance.getConfiguration().getBlockTypes();
         List<PublicTownBlock> publics = blockTypes.getPublics();
         publics.stream().filter(publicTownBlock -> publicTownBlock.getName().equals(currentBlock.getType().getName())).findFirst().ifPresent(publicTownBlock -> {
-            String uuid = player.getUniqueId().toString();
-            boolean inCoolDown = ProductUtils.isInCoolDown(uuid);
+            String key = ProductUtils.publicBlockKey(this, player);
+            boolean inCoolDown = ProductUtils.isInCoolDown(key);
             if (inCoolDown) {
                 SimpleTownyProduct.logger.info("In cool down. Skip.");
                 return;
@@ -51,7 +51,7 @@ public class PublicTownBlock extends BaseBlock implements Product {
                 ProductUtils.executeCommand(player, actuallyCommand);
                 Messages.send(player, message.getSuccessGainProduct().formatted(this.getName()));
                 BukkitTools.fireEvent(new PlotGainProductEvent(town, this, player));
-                ProductUtils.addCoolDown(uuid, this);
+                ProductUtils.addCoolDown(key, this);
             } catch (ConfigWrongException e) {
                 throw new RuntimeException(e);
             }

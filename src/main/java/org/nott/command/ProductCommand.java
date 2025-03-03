@@ -17,14 +17,19 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.nott.SimpleTownyProduct;
 import org.nott.event.PrePlotStealEvent;
+import org.nott.exception.ConfigWrongException;
 import org.nott.model.Configuration;
 import org.nott.model.Message;
 import org.nott.model.PlayerPlotBlock;
 import org.nott.model.abstracts.BaseBlock;
+import org.nott.model.enums.BlockType;
+import org.nott.time.TimePeriod;
 import org.nott.time.Timer;
 import org.nott.utils.CommonUtils;
 import org.nott.utils.Messages;
@@ -32,6 +37,7 @@ import org.nott.utils.PermissionUtils;
 import org.nott.utils.ProductUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,7 +46,12 @@ import java.util.stream.Collectors;
  * @author Nott
  * @date 2025-2-21
  */
-public class ProductCommand implements CommandExecutor {
+public class ProductCommand implements TabExecutor {
+
+    List<String> userCommands = List.of("help", "info", "steal", "gain");
+
+    List<String> adminCommands = List.of("help", "info", "steal", "gain", "reload", "admin");
+
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
@@ -54,9 +65,6 @@ public class ProductCommand implements CommandExecutor {
             case "help":
                 parseHelpCommand(commandSender);
                 break;
-            case "reload":
-                parseReloadCommand(commandSender);
-                break;
             case "info":
                 parseInfoCommand(commandSender, subArgs);
                 break;
@@ -66,24 +74,15 @@ public class ProductCommand implements CommandExecutor {
             case "steal":
                 parseStealCommand(commandSender, subArgs);
                 break;
-            case "admin":
-                parseAdminCommand(commandSender, subArgs);
-                break;
         }
         return true;
     }
 
     private void parseHelpCommand(CommandSender commandSender) {
         Message message = SimpleTownyProduct.INSTANCE.getMessage();
-        boolean op = commandSender.isOp();
         List<Component> texts = new ArrayList<Component>();
         for (String string : message.getCommandHelp()) {
             texts.add(Component.text(string, NamedTextColor.GOLD));
-        }
-        if (op) {
-            for (String string : message.getCommandAdminHelp()) {
-                texts.add(Component.text(string, NamedTextColor.GOLD));
-            }
         }
         Messages.sendMessages(commandSender, Messages.buildProductScreen(texts));
     }
@@ -98,13 +97,7 @@ public class ProductCommand implements CommandExecutor {
         Messages.sendMessages(commandSender, Messages.buildProductScreen(texts));
     }
 
-    private void parseReloadCommand(CommandSender commandSender) {
-        if (!commandSender.isOp()) {
-            Messages.sendError(commandSender, SimpleTownyProduct.INSTANCE.getMessage().getCommonNoPermission());
-            return;
-        }
-        SimpleTownyProduct.INSTANCE.loadConfiguration();
-    }
+
 
     private void parseStealCommand(CommandSender commandSender, String[] args) {
         //  使用权限管理
@@ -160,7 +153,7 @@ public class ProductCommand implements CommandExecutor {
             }
             targetBlocks.add(plotBlock.getBlock());
 
-            if (ProductUtils.isInCoolDown(ProductUtils.stolenKey(plotBlock.getBlock(), town))) {
+            if (ProductUtils.isInCoolDown(ProductUtils.blockKey(plotBlock.getBlock(), town))) {
                 Messages.sendError(commandSender, message.getTargetCoolingDown());
                 return;
             }
@@ -172,12 +165,9 @@ public class ProductCommand implements CommandExecutor {
                 Messages.sendError(commandSender, message.getNoSpecialBlock());
                 return;
             }
-            targetBlocks = plotBlocks.stream().map(PlayerPlotBlock::getBlock).collect(Collectors.toList());
-
-            if (ProductUtils.isInCoolDown(ProductUtils.stolenKey(town))) {
-                Messages.sendError(commandSender, message.getTargetCoolingDown());
-                return;
-            }
+            targetBlocks = plotBlocks.stream().map(PlayerPlotBlock::getBlock)
+                    .filter(r -> !ProductUtils.isInCoolDown(ProductUtils.blockKey(r, town)))
+                    .collect(Collectors.toList());
         }
 
         if (ProductUtils.isInCoolDown(ProductUtils.stealActivityKey(player))) {
@@ -274,20 +264,21 @@ public class ProductCommand implements CommandExecutor {
         Messages.sendMessages(commandSender, Messages.buildProductScreen(body));
     }
 
-    private void parseAdminCommand(CommandSender commandSender, String[] subArgs) {
-        PermissionUtils.checkPermission((Player) commandSender, "towny.product.admin");
-        if (subArgs.length == 0) {
-            parseHelpCommand(commandSender);
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        boolean isAdmin = PermissionUtils.hasPermission((Player) commandSender, "towny.product.admin");
+        if(args.length == 1){
+            return isAdmin ? adminCommands : userCommands;
         }
-        String[] args = CommonUtils.removeFirstElement(subArgs);
-        String adminExecuteCommand = subArgs[0];
-        switch (adminExecuteCommand){
-            // TODO Admin Command like cooldown,product, etc.,
-            case "set": parseAdminSetCommand(args);
-            break;
-        }
-    }
+        if(args.length == 2){
+            String arg = args[1];
+            switch (arg){
+                case "admin" : {
+                    if(!isAdmin) return null;
 
-    private void parseAdminSetCommand(String[] args) {
+                }
+            }
+        }
+        return null;
     }
 }

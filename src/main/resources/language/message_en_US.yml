@@ -51,17 +51,25 @@ steal_still_jailed: "You still be jail, fail to steal."
 steal_fail_title: "Steal Fail"
 steal_fail_death: "Thief Dead"
 steal_interrupt_for_out: "Out target."
-  steal_interrupt_message: "Steal interrupted because %s%s"
+steal_interrupt_message: "Steal interrupted because %s%s"
 steal_success_title: "Steal Success"
 steal_success_sub_title: "Steal from target successfully."
 be_stolen_warning: "Because your town: %s's special block [%s] being stolen by %s, so it will be lost %s piece products. "
+town_not_found: "Town %s not found."
+block_not_found: "Special block %s not found."
+resident_not_found: "Player %s not found."
+success_set_block_cool: "Set %s town's block %s gain cool down to %s"
+success_set_block_cool_for_player: "Set player %s to gain public block %s cool down to %s"
 command_help:
   - "/t product help: See the commands help."
   - "/t product info: Check your special block info."
   - "/t product gain: Get the special block products."
-  - "/t product steal: Steal a part of product from other town's special block"
+  - "/t product steal: Steal a part of product from other town's special block."
 command_admin_help:
-  - "/t product reload: Reload plugins."
+  - "/ta product reload: Reload plugins."
+  - "/ta product set block private {townName} {block} {period}: Set private block of town's cool-down."
+  - "/ta product set block public {playerName} {block} {period}: Set public block for player gain cool-down."
+  - "/ta product set steal {playerName} {period}: Set player start steal activity cool-down."
 
 
 

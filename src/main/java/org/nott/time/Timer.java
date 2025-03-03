@@ -23,6 +23,10 @@ public class Timer implements Comparable<Timer>{
 
     private String key;
 
+    private String type;
+
+    private Object data;
+
     private long startTime;
 
     private long endTime;
@@ -66,6 +70,7 @@ public class Timer implements Comparable<Timer>{
     public Timer(String key, String coolDown) {
         this.key = key;
         this.startTime = System.currentTimeMillis();
+        this.type = "cooldown";
         Long timeVal = 0L;
         try {
             timeVal = TimePeriod.fromStringGetVal(coolDown);

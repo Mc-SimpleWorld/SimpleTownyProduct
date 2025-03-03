@@ -55,13 +55,21 @@ steal_success_sub_title: "成功盗窃目标"
 steal_interrupt_message: "盗窃中断，原因：盗贼%s%s"
 steal_still_jailed: "你仍在监禁状态，无法偷窃"
 be_stolen_warning: "你的[%s]城镇下的资源地块[%s]已被%s盗窃，将在下次收获资源时损失[%s]数量的区块资源"
+town_not_found: "没有找到城镇%s"
+block_not_found: "没有找到区块%s"
+resident_not_found: "没有找到玩家%s"
+success_set_block_cool: "成功设置%s的%s区块收获冷却为%s"
+success_set_block_cool_for_player: "成功为玩家%s设置%s区块收获冷却为%s"
 command_help:
   - "/t product help: 查看命令帮助"
   - "/t product info: 查看资源地块信息[公共+私有]"
   - "/t product gain: 获取特殊地块的资源"
   - "/t product steal: 偷窃其他城镇中特殊地块的部分产出"
 command_admin_help:
-  - "/t product reload: 重载插件"
+  - "/ta product reload: 重载插件"
+  - "/ta product set block private {townName} {block} {period}: 设置城镇中私有区块的收获冷却"
+  - "/ta product set block public {playerName} {block} {period}: 设置玩家在公共区块的收获冷却"
+  - "/ta product set steal {playerName} {period}: 设置玩家发起盗窃的冷却"
 
 
 

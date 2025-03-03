@@ -8,6 +8,7 @@ import org.nott.SimpleTownyProduct;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,6 +19,8 @@ import java.util.logging.Logger;
 public class FileUtils {
 
     static Logger logger = SimpleTownyProduct.logger;
+
+    private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     public static <T> T loadYamlFile(String path, Class<T> clazz) throws IOException {
         File file = new File(path);
@@ -62,6 +65,29 @@ public class FileUtils {
             if(fileWriter != null){
                 fileWriter.close();
             }
+        }
+    }
+
+    public static Map<String, String> readByKeyValue(File file) {
+        lock.readLock().lock();
+        try {
+            return readKeyValueFile(file);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public static void writeByKeyValue(File file, Map<String, String> data) {
+        lock.writeLock().lock();
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            for (Map.Entry<String, String> entry : data.entrySet()) {
+                writer.write(entry.getKey() + "=" + entry.getValue());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            SimpleTownyProduct.logger.severe(e.getMessage());
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 }

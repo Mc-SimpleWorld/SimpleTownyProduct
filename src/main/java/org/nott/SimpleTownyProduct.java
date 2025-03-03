@@ -1,5 +1,6 @@
 package org.nott;
 
+import com.google.gson.Gson;
 import com.palmergames.bukkit.towny.TownyCommandAddonAPI;
 import com.palmergames.bukkit.towny.exceptions.TownyException;
 import com.palmergames.bukkit.towny.object.AddonCommand;
@@ -10,26 +11,26 @@ import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.milkbowl.vault.economy.Economy;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
+import org.nott.command.ProductAdminCommand;
 import org.nott.command.ProductCommand;
 import org.nott.data.file.DataFileHandler;
 import org.nott.data.file.DataHandlerRegistrar;
-import org.nott.model.Configuration;
-import org.nott.model.Message;
-import org.nott.model.SpecialTownBlock;
+import org.nott.data.file.DataSource;
+import org.nott.model.*;
 import org.nott.model.abstracts.BaseBlock;
-import org.nott.model.PrivateTownBlock;
-import org.nott.model.PublicTownBlock;
 import org.nott.model.enums.DbTypeEnum;
 import org.nott.time.Timer;
+import org.nott.utils.FileUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.FileReader;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,7 +38,7 @@ import java.util.logging.Logger;
 @Setter
 public final class SimpleTownyProduct extends JavaPlugin {
 
-    public static final String VERSION = "0.0.1";
+    public static String VERSION;
 
     public static Logger logger;
 
@@ -62,15 +63,31 @@ public final class SimpleTownyProduct extends JavaPlugin {
         // Plugin startup logic
         logger = getLogger();
         logger.info("SimpleTownyProduct starting...");
+        this.readVersionInfo();
         this.registerServices();
-        this.loadConfiguration();
+        this.loadConfigurationAndMessage();
         this.registerEvents();
         this.registerTownySubCommand();
         this.registerSpecialTownBlock();
         this.registerDataHandler();
+        this.runBackTask();
+        logger.info("SimpleTownyProduct started.");
+    }
+
+    private void runBackTask() {
         BukkitTask bukkitTask = SCHEDULER.runTaskAsynchronously(this, Timer::run);
         this.tasks.add(bukkitTask);
-        logger.info("SimpleTownyProduct started.");
+    }
+
+    private void readVersionInfo() {
+        try {
+            MavenXpp3Reader reader = new MavenXpp3Reader();
+            Model read = reader.read(new FileReader("pom.xml"));
+            VERSION = read.getVersion();
+        } catch (Exception e) {
+            logger.info("Read version failed: " + e.getMessage());
+            this.onDisable();
+        }
     }
 
     private void registerDataHandler() {
@@ -78,12 +95,83 @@ public final class SimpleTownyProduct extends JavaPlugin {
         if (storageType.equalsIgnoreCase(DbTypeEnum.FILE.name())) {
             this.saveResource("data/cooldown.txt", false);
             this.saveResource("data/stolen.txt", false);
-            // TODO 改造注册方法
+            this.saveResource("data/steal-activity.txt", false);
+            String coolDownFilePath = this.getDataFolder() + File.separator + "data" + File.separator + "cooldown.txt";
+            String stolenFilePath = this.getDataFolder() + File.separator + "data" + File.separator + "stolen.txt";
+            String stealActivityPath = this.getDataFolder() + File.separator + "data" + File.separator + "steal-activity.txt";
+            File coolDownFile = new File(coolDownFilePath);
+            File stolenFile = new File(stolenFilePath);
+            File stealActivityFile = new File(stealActivityPath);
             this.dataHandlerRegistrar = DataHandlerRegistrar.Builder()
-                    .register(new DataFileHandler(new File(this.getDataFolder() + File.separator + "data" + File.separator + "cooldown.txt")),
-                            new DataFileHandler(new File(this.getDataFolder() + File.separator + "data" + File.separator + "stolen.txt")))
+                    .register(DataFileHandler.build(coolDownFile, new DataSource<>() {
+                        @Override
+                        public Map<String, String> getDataInMemory() {
+                            HashMap<String, String> data = new HashMap<>();
+                            for (String uuid : Timer.timerMap.keySet()) {
+                                Timer timer = Timer.timerMap.get(uuid);
+                                long endTime = timer.getEndTime();
+                                long period = endTime - System.currentTimeMillis();
+                                if (period > 0) {
+                                    data.put(uuid, period + "");
+                                }
+                            }
+                            return data;
+                        }
+
+                        @Override
+                        public void putDataToMemory() {
+                            Map<String, String> read = FileUtils.readByKeyValue(coolDownFile);
+                            for (String key : read.keySet()) {
+                                String data = read.get(key);
+                                Timer timer = new Timer(key, Long.parseLong(data));
+                                timer.start();
+                            }
+                        }
+                    }))
+                    .register(DataFileHandler.build(stolenFile, new DataSource<>() {
+                        @Override
+                        public Map<String, String> getDataInMemory() {
+                            HashMap<String, String> data = new HashMap<>();
+                            for (String uuid : Timer.lostProductTownMap.keySet()) {
+                                Long rate = Timer.lostProductTownMap.get(uuid);
+                                if (rate > 0) {
+                                    data.put(uuid, rate + "");
+                                }
+                            }
+                            return data;
+                        }
+
+                        @Override
+                        public void putDataToMemory() {
+                            Map<String, String> value = FileUtils.readByKeyValue(stolenFile);
+                            for (String key : value.keySet()) {
+                                String data = value.get(key);
+                                Timer.lostProductTownMap.put(key, Long.parseLong(data));
+                            }
+                        }
+                    }))
+                    .register(DataFileHandler.build(stolenFile, new DataSource<>() {
+                        @Override
+                        public Map<String, String> getDataInMemory() {
+                            HashMap<String, String> data = new HashMap<>();
+                            for (String act : Timer.runningStealActivity.keySet()) {
+                                data.put(act, new Gson().toJson(Timer.runningStealActivity.get(act)));
+                            }
+                            return data;
+                        }
+
+                        @Override
+                        public void putDataToMemory() {
+                            Map<String, String> value = FileUtils.readByKeyValue(stealActivityFile);
+                            for (String key : value.keySet()) {
+                                String activityJson = value.get(key);
+                                Timer.runningStealActivity.put(key, new Gson().fromJson(activityJson, StealActivity.class));
+                            }
+                        }
+                    }))
                     .build();
-        }else {
+            logger.info("DataHandle Register success, type : [%s]".formatted(storageType));
+        } else {
             throw new IllegalArgumentException("Not Support Other Storage Type except 'File'.");
         }
     }
@@ -132,6 +220,7 @@ public final class SimpleTownyProduct extends JavaPlugin {
         myCommand.setTabCompletion(0, Arrays.asList("product"));
         myCommand.setTabCompletion(1, Arrays.asList("gain", "info", "trade"));
         TownyCommandAddonAPI.addSubCommand(myCommand);
+        TownyCommandAddonAPI.addSubCommand(TownyCommandAddonAPI.CommandType.TOWNYADMIN, "product", new ProductAdminCommand());
     }
 
     private void registerServices() {
@@ -147,7 +236,7 @@ public final class SimpleTownyProduct extends JavaPlugin {
         ECONOMY = rsp.getProvider();
     }
 
-    public void loadConfiguration() {
+    public void loadConfigurationAndMessage() {
         try {
             this.saveDefaultConfig();
             this.saveResource("config.yml", false);
@@ -167,7 +256,9 @@ public final class SimpleTownyProduct extends JavaPlugin {
     public void onDisable() {
         // Plugin shutdown logic
         // 数据持久化
-        this.dataHandlerRegistrar.end();
+        if(this.dataHandlerRegistrar != null){
+            this.dataHandlerRegistrar.end();
+        }
         for (BukkitTask task : tasks) {
             task.cancel();
         }
