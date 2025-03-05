@@ -1,4 +1,4 @@
-package org.nott.model;
+package org.nott.model.block;
 
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Town;
@@ -11,6 +11,7 @@ import org.nott.SimpleTownyProduct;
 import org.nott.event.PlotGainProductEvent;
 import org.nott.exception.ConfigWrongException;
 import org.nott.exception.MethodNotSupportException;
+import org.nott.model.Message;
 import org.nott.model.abstracts.BaseBlock;
 import org.nott.model.interfaces.Product;
 import org.nott.utils.Messages;

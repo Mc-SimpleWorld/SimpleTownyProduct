@@ -1,4 +1,4 @@
-package org.nott.model;
+package org.nott.model.block;
 
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Resident;
@@ -12,15 +12,20 @@ import org.nott.SimpleTownyProduct;
 import org.nott.event.PlotGainProductEvent;
 import org.nott.event.PlotStealEndEvent;
 import org.nott.exception.ConfigWrongException;
+import org.nott.exception.ProductException;
+import org.nott.model.Configuration;
+import org.nott.model.Message;
 import org.nott.model.abstracts.BaseBlock;
+import org.nott.model.data.LostResourceData;
+import org.nott.model.data.TownSpecialBlockData;
 import org.nott.model.interfaces.Product;
-import org.nott.time.TimePeriod;
 import org.nott.time.Timer;
 import org.nott.utils.Messages;
 import org.nott.utils.PermissionUtils;
 import org.nott.utils.ProductUtils;
 import org.nott.utils.TownyUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -29,63 +34,22 @@ public class PrivateTownBlock extends BaseBlock implements Product {
 
     @Override
     public void doGain(Player player) {
-        //  使用权限管理
-        PermissionUtils.checkPermission(player, "towny.product.gain");
         SimpleTownyProduct.logger.info("Start gain in [%s] PrivateTownBlock For player: [%s]".formatted(this.getName(), player.getName()));
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
         Message message = instance.getMessage();
         TownyAPI towny = TownyAPI.getInstance();
         Resident resident = towny.getResident(player);
         Town town = resident.getTownOrNull();
-        if(town == null){
-            Messages.sendError(player, message.getNotInTown());
-            return;
-        }
-        String key = this.getName() + ":" + town.getUUID().toString();
-        Configuration configuration = instance.getConfiguration();
-        Location location = player.getLocation();
-        Town atTown = towny.getTown(location);
-        TownBlock townBlock = towny.getTownBlock(location);
-        boolean isOwnTown = town.equals(atTown);
-        boolean gainPrivateNeedStandInBlock = configuration.isGainPrivateNeedStandInBlock();
-        boolean gainPrivateNeedStandInTown = configuration.isGainPrivateNeedStandInTown();
-        // TODO Maybe useless
-        boolean gainPrivateNeedStandInNation = configuration.isGainPrivateNeedStandInNation();
-
-        if(!isOwnTown){
-            Messages.sendError(player,this.getName() + "-" + message.getMustInOwnTown());
-            return;
-        }
-
-        if(gainPrivateNeedStandInTown){
-            if(!atTown.getName().equals(town.getName())){
-                SimpleTownyProduct.logger.log(Level.INFO, "Not in town. Skip.");
-                Messages.sendError(player,this.getName() + "-" + message.getMustStandInTown());
-                return;
-            }
-        }else if(gainPrivateNeedStandInBlock){
-            if(townBlock == null || !townBlock.getType().getName().equals(this.getName())){
-                SimpleTownyProduct.logger.log(Level.INFO, "Not a Block. Skip.");
-                Messages.sendError(player,this.getName() + "-" + message.getMustStandInBlock());
-                return;
-            }
-        } else {
-            throw new RuntimeException("Current not support other gain mode, except one: gainPrivateNeedStandInTown,gainPrivateNeedStandInTown");
-        }
-        // 判断是否在冷却中
-        if(ProductUtils.isInCoolDown(key)){
-            SimpleTownyProduct.logger.log(Level.INFO, "In cool down. Skip.");
-            return;
-        }
+        String townId = town.getUUID().toString();
         try {
-            List<String> actuallyCommand = ProductUtils.formatBlockCommands(this, town);
+            TownSpecialBlockData data = SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.get(townId);
+            LostResourceData lost = data.getLost(this.getName());
+            List<String> actuallyCommand = ProductUtils.formatBlockCommands(this, lost);
             ProductUtils.executeCommand(player, actuallyCommand);
             Messages.send(player, message.getSuccessGainProduct().formatted(this.getName()));
             BukkitTools.fireEvent(new PlotGainProductEvent(town, this, player));
-            ProductUtils.addCoolDown(key, this);
-            Timer.lostProductTownMap.remove(ProductUtils.stolenKey(this, town));
-        } catch (ConfigWrongException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            Messages.sendError(player, e.getMessage());
         }
     }
 
@@ -101,7 +65,7 @@ public class PrivateTownBlock extends BaseBlock implements Product {
             return;
         }
         PlayerPlotBlock playerPlotBlock = ProductUtils.getSpecialBlockPlayerLoc(player);
-        if(playerPlotBlock == null){
+        if (playerPlotBlock == null) {
             Messages.sendError(player, message.getNoSpecialBlock());
             return;
         }

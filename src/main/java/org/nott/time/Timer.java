@@ -1,18 +1,14 @@
 package org.nott.time;
 
-import com.palmergames.bukkit.towny.object.Town;
 import lombok.Data;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.nott.SimpleTownyProduct;
 import org.nott.exception.ConfigWrongException;
 import org.nott.exception.TimeFormatException;
-import org.nott.model.StealActivity;
+import org.nott.model.activity.StealActivity;
 
-import java.sql.Time;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +26,8 @@ public class Timer implements Comparable<Timer>{
     private long startTime;
 
     private long endTime;
+
+    private TimerHandler timerHandler;
 
     public static final String STEAL_KEY = "STEAL:";
 
@@ -59,6 +57,9 @@ public class Timer implements Comparable<Timer>{
                 long fristEndTime = frist.getEndTime();
                 if(currentTimeMillis >= fristEndTime){
                     Timer take = timers.take();
+                    if(take.timerHandler != null){
+                        take.timerHandler.doWhenTakeOut();
+                    }
                     timerMap.remove(take.getKey());
                 }
             } catch (InterruptedException e) {

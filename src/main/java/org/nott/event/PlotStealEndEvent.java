@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
-import org.nott.model.StealActivity;
+import org.nott.model.activity.StealActivity;
 import org.nott.model.abstracts.BaseBlock;
 
 /**

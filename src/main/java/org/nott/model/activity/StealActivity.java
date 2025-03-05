@@ -1,4 +1,4 @@
-package org.nott.model;
+package org.nott.model.activity;
 
 
 import com.palmergames.bukkit.towny.TownyAPI;
@@ -12,8 +12,11 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.nott.SimpleTownyProduct;
 import org.nott.event.PlotBeStealEvent;
+import org.nott.model.Configuration;
+import org.nott.model.Message;
 import org.nott.model.abstracts.BaseBlock;
 import org.nott.time.Timer;
+import org.nott.utils.CommonUtils;
 
 import java.time.Duration;
 import java.util.List;
@@ -24,6 +27,8 @@ import java.util.List;
  */
 @Data
 public class StealActivity {
+
+    private String uuid;
 
     private boolean isInterrupt;
 
@@ -57,6 +62,7 @@ public class StealActivity {
         this.setThief(event.getThief());
         this.setStart(System.currentTimeMillis());
         this.setInTown(event.isStealWholeTownBlock());
+        this.uuid = CommonUtils.uid();
     }
 
     public void checkThiefIfOut() {

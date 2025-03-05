@@ -1,0 +1,28 @@
+# 城镇UUID.yml
+town_uuid: "town-uuid-1234"  # 城镇的唯一标识
+town_name: ""
+special_blocks:  # 特殊地块列表
+  - block_uuid: "plot-uuid-1"
+    type: "钢铁"
+    claim_from_other: false
+    is_neutral: false
+    x:
+    y:
+
+  - block_uuid: "plot-uuid-2"
+    type: "魔法"
+    claim_from_other: false
+    is_neutral: false
+
+block_cool_downs:
+  - block_uuid: "plot-uuid-1"
+    gain_player_name: 123
+    gain_player_uid: 123
+    gain_time: '2025-03-03 10:57:13'
+    gain_count: 1000
+    cool_left: 232323
+lost_resources:  # 遭盗窃丢失资源的区块
+  - block_uuid: "plot-uuid-1"
+    lost_amount: 50  # 丢失的资源数量
+    lost_rate: 5
+    lost_times: 1

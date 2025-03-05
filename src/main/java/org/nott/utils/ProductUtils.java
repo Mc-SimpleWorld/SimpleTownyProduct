@@ -11,10 +11,15 @@ import org.nott.SimpleTownyProduct;
 import org.nott.exception.ConfigWrongException;
 import org.nott.model.*;
 import org.nott.model.abstracts.BaseBlock;
-import org.nott.time.TimePeriod;
+import org.nott.model.block.PlayerPlotBlock;
+import org.nott.model.block.PrivateTownBlock;
+import org.nott.model.block.PublicTownBlock;
+import org.nott.model.block.SpecialTownBlock;
+import org.nott.model.data.LostResourceData;
+import org.nott.model.data.SpecialBlockData;
+import org.nott.model.data.TownSpecialBlockData;
 import org.nott.time.Timer;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -182,5 +187,57 @@ public class ProductUtils {
         }
         PlayerPlotBlock plotBlock = findSpecialTownBlock(townBlock.getTypeName());
         return plotBlock;
+    }
+
+    public static void addSbData(BaseBlock block, Town town, TownBlock townBlock){
+        String townId = town.getUUID().toString();
+        TownSpecialBlockData data = SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.containsKey(townId) ? SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.get(townId)
+                : TownSpecialBlockData.empty(town);
+        List<SpecialBlockData> specialBlocks = data.getSpecialBlocks();
+        SpecialBlockData specialBlockData = new SpecialBlockData();
+        specialBlockData.setBlockUuid(block.generateUUId(townBlock));
+        specialBlockData.setType(block.getName());
+        specialBlockData.setNeutral(block instanceof PublicTownBlock);
+        specialBlockData.setClaimFromOther(false);
+        specialBlocks.add(specialBlockData);
+        SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.put(townId, data);
+    }
+
+    public static void removeSbData(BaseBlock block, Town town, TownBlock townBlock){
+        String townId = town.getUUID().toString();
+        if (!SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.containsKey(townId)) {
+            return;
+        }
+        String uuId = block.generateUUId(townBlock);
+        TownSpecialBlockData data = SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.get(townId);
+        List<SpecialBlockData> specialBlocks = data.getSpecialBlocks();
+        SpecialBlockData specialBlockData = specialBlocks.stream().filter(sb -> sb.getBlockUuid().equals(uuId)).findFirst().orElse(null);
+        if(specialBlockData != null){
+            specialBlocks.remove(specialBlockData);
+        }
+        SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.put(townId, data);
+    }
+
+    public static BaseBlock getBaseBlockFromSbData(SpecialBlockData specialBlockData) {
+        boolean neutral = specialBlockData.isNeutral();
+        String type = specialBlockData.getType();
+        BaseBlock block;
+        if(neutral){
+            List<PublicTownBlock> publics = SimpleTownyProduct.INSTANCE.getConfiguration().getBlockTypes().getPublics();
+            block = publics.stream().filter(publicTownBlock -> type.equals(publicTownBlock.getName())).findAny().orElse(null);
+        }else {
+            List<PrivateTownBlock> privates = SimpleTownyProduct.INSTANCE.getConfiguration().getBlockTypes().getPrivates();
+            block = privates.stream().filter(privateTownBlock -> type.equals(privateTownBlock.getName())).findFirst().orElse(null);
+        }
+        return block;
+    }
+
+    public static List<String> formatBlockCommands(PrivateTownBlock privateTownBlock, LostResourceData lost) {
+        List<String> gainCommand = privateTownBlock.getGainCommand();
+        if(lost == null){
+            return gainCommand;
+        }
+
+        return null;
     }
 }

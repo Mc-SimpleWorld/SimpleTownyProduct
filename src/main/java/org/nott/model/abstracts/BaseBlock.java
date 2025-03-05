@@ -1,14 +1,22 @@
 package org.nott.model.abstracts;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.palmergames.bukkit.towny.object.TownBlock;
 import lombok.Data;
 import org.bukkit.entity.Player;
 import org.nott.SimpleTownyProduct;
 import org.nott.exception.ConfigWrongException;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 public abstract class BaseBlock {
+
+    @JsonIgnore
+    private String uid;
+
+    private String key;
 
     private Double townLevelExponent;
 
@@ -45,5 +53,10 @@ public abstract class BaseBlock {
 
     public void beSteal(Player player){
         SimpleTownyProduct.logger.info("DoSteal in Base");
+    }
+
+    public String generateUUId(TownBlock townBlock){
+        this.uid = townBlock.toString();
+        return this.getUid();
     }
 }

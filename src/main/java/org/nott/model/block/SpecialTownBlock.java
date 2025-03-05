@@ -1,4 +1,4 @@
-package org.nott.model;
+package org.nott.model.block;
 
 import lombok.Data;
 

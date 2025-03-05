@@ -24,6 +24,11 @@ import org.nott.data.file.DataHandlerRegistrar;
 import org.nott.data.file.DataSource;
 import org.nott.model.*;
 import org.nott.model.abstracts.BaseBlock;
+import org.nott.model.activity.StealActivity;
+import org.nott.model.block.PrivateTownBlock;
+import org.nott.model.block.PublicTownBlock;
+import org.nott.model.block.SpecialTownBlock;
+import org.nott.model.data.TownSpecialBlockData;
 import org.nott.model.enums.DbTypeEnum;
 import org.nott.time.Timer;
 import org.nott.utils.FileUtils;
@@ -31,6 +36,7 @@ import org.nott.utils.FileUtils;
 import java.io.File;
 import java.io.FileReader;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,6 +63,8 @@ public final class SimpleTownyProduct extends JavaPlugin {
     public DataHandlerRegistrar dataHandlerRegistrar;
 
     public List<BukkitTask> tasks = new ArrayList<>();
+
+    public static final Map<String, TownSpecialBlockData> TOWN_SPECIAL_BLOCK_DATA_MAP = new ConcurrentHashMap<>();
 
     @Override
     public void onEnable() {

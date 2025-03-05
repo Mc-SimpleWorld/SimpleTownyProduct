@@ -78,6 +78,7 @@ block_types:
   publics:
       # 区块的名字，必须唯一
     - name: '驿站'
+      key: 'post'
       map_key: 'p'
       # 一个城镇可以拥有几个同类型区块
       limit_per_town: 1
@@ -112,6 +113,7 @@ block_types:
   # Only the owner of the town can gain products from the private block types
   privates:
     - name: '钢铁'
+      key: 'iron'
       map_key: 'i'
       limit_per_town: 1
       same_nation_max: 1
@@ -128,6 +130,7 @@ block_types:
       gain_command:
         - '[console]money grant %player_name% gun {{PRODUCT_NUMBER}}'
     - name: '魔法'
+      key: 'magic'
       map_key: 'm'
       limit_per_town: 1
       same_nation_max: 2
@@ -143,6 +146,85 @@ block_types:
       trade_cool_down: '1day'
       gain_command:
         - '[console]give %player_name% tnt {{PRODUCT_NUMBER}}'
+
+# 团体争夺设置
+group_war:
+  enable: true
+  # 争夺时间段（24小时制）
+  war_time:
+    start: 20 # 晚上8点
+    end: 22   # 晚上10点
+
+  # 争夺持续时间（秒）
+  war_duration: 900 # 15分钟
+
+  # 争夺积分设置
+  points:
+    kill: 10 # 每击杀1名玩家
+    capture: 1 # 每秒占领据点
+    task: 50 # 完成任务
+
+  # 人数限制
+  player_limits:
+    min_attackers: 5 # 进攻方最低人数
+    max_attackers_multiplier: 1.5 # 进攻方人数上限为防守方的1.5倍
+    min_defenders_multiplier: 0.67 # 防守方人数下限为进攻方的2/3
+
+  # 争夺成本
+  cost:
+    gold: 1000 # 发起争夺需要的金币
+
+# 偷袭设置
+sneak_attack:
+  # 偷袭时间段（24小时制）
+  sneak_time:
+    start: 8 # 早上8点
+    end: 20  # 晚上8点
+
+  # 偷袭成功概率（基础值）
+  base_success_rate: 0.5 # 50%
+
+  # 偷袭成功概率影响因素
+  success_rate_factors:
+    attacker_per_player: 0.05 # 每多1名进攻方玩家，成功概率增加5%
+    defender_per_player: -0.05 # 每多1名防守方玩家，成功概率降低5%
+    max_success_rate: 0.7 # 成功概率上限70%
+    min_success_rate: 0.3 # 成功概率下限30%
+
+  # 偷袭成本
+  cost:
+    gold: 2000 # 发起偷袭需要的金币
+
+  # 偷袭失败惩罚
+  punishment:
+    cooldown: 1week # 失败后1周内无法再发起争夺或偷袭（秒）
+    gold: 1000 # 失败后需要支付的金币
+
+# 监狱设置
+jail:
+  # 监狱位置（世界名、x、y、z）
+  location:
+    world: "world"
+    x: 100
+    y: 64
+    z: 200
+
+  # 监狱持续时间（秒）
+  duration: 3600 # 1小时
+
+# 通知设置
+notifications:
+  # 争夺通知
+  war:
+    start: "&a[争夺] &f争夺已开始！进攻方：{attacker}，防守方：{defender}。"
+    end: "&a[争夺] &f争夺已结束！胜利方：{winner}。"
+    point_update: "&a[争夺] &f当前积分：进攻方 {attacker_points}，防守方 {defender_points}。"
+
+  # 偷袭通知
+  sneak:
+    start: "&c[偷袭] &f偷袭已开始！进攻方：{attacker}，目标地块：{plot}。"
+    success: "&c[偷袭] &f偷袭成功！地块 {plot} 已归 {attacker} 所有。"
+    fail: "&c[偷袭] &f偷袭失败！进攻方 {attacker} 已被收监。"
 
 # TODO 随机增减益事件
 #event_weeks_day:

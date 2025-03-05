@@ -1,15 +1,12 @@
 package org.nott.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.nott.SimpleTownyProduct;
 import org.nott.exception.VersionNotCorrectException;
+import org.nott.model.block.SpecialTownBlock;
 import org.nott.utils.FileUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Nott
