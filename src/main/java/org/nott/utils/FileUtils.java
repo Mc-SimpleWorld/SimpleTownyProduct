@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.nott.SimpleTownyProduct;
+import org.nott.model.data.TownSpecialBlockData;
 
 import java.io.*;
 import java.util.HashMap;
@@ -84,6 +85,19 @@ public class FileUtils {
                 writer.write(entry.getKey() + "=" + entry.getValue());
                 writer.newLine();
             }
+        } catch (IOException e) {
+            SimpleTownyProduct.logger.severe(e.getMessage());
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public static void writeByYaml(Object d, File file) {
+        lock.writeLock().lock();
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+            mapper.writeValue(writer, d);
         } catch (IOException e) {
             SimpleTownyProduct.logger.severe(e.getMessage());
         } finally {

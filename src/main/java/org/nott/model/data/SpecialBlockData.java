@@ -18,8 +18,9 @@ public class SpecialBlockData {
 
     private boolean neutral;
 
-    // todo 添加该特殊区块对应的TownBlock属性，在收获时需要对比
-//    private TownBlock townBlock;
+    private double x;
+
+    private double y;
 
 
 }

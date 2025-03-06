@@ -1,6 +1,7 @@
 package org.nott.utils;
 
 import com.palmergames.bukkit.towny.TownyAPI;
+import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -15,6 +16,7 @@ import org.nott.model.block.PlayerPlotBlock;
 import org.nott.model.block.PrivateTownBlock;
 import org.nott.model.block.PublicTownBlock;
 import org.nott.model.block.SpecialTownBlock;
+import org.nott.model.data.BlockCoolDownData;
 import org.nott.model.data.LostResourceData;
 import org.nott.model.data.SpecialBlockData;
 import org.nott.model.data.TownSpecialBlockData;
@@ -88,6 +90,14 @@ public class ProductUtils {
 
     public static boolean isInCoolDown(String key) {
         return Timer.timerMap.containsKey(key);
+    }
+
+    public static boolean isPublicBlockInCoolDown(Player player, BaseBlock block) {
+        List<BlockCoolDownData> blockCoolDowns = SimpleTownyProduct.PUBLIC_SPECIAL_DATA.getBlockCoolDowns();
+        String uid = block.getUid();
+        String playerId = player.getUniqueId().toString();
+        return blockCoolDowns.stream().filter(r -> uid.equals(r.getBlockUuid()) && playerId.equals(r.getGainPlayerUid()))
+                .findFirst().orElse(null) != null;
     }
 
     public static void setCoolDown(String key, Long val) {
@@ -239,5 +249,43 @@ public class ProductUtils {
         }
 
         return null;
+    }
+
+    public static List<BaseBlock> findSbFromTownBlocks(Town town, Player player) {
+        // 如果在中立城镇
+        List<Resident> residents = town.getResidents();
+        boolean onlyNeedNeutral = false;
+        for (Resident resident : residents) {
+            if (resident.hasPermissionNode("towny.product.neutral")) {
+                onlyNeedNeutral = true;
+                break;
+            }
+        }
+
+        List<BaseBlock> baseBlocks = new ArrayList<>();
+
+        if(onlyNeedNeutral){
+            TownSpecialBlockData publicSpecialData = SimpleTownyProduct.PUBLIC_SPECIAL_DATA;
+            findBaseBlockIfNotCd(player, baseBlocks, publicSpecialData);
+        }else {
+            TownSpecialBlockData privateSbData = SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.get(town.getUUID().toString());
+            findBaseBlockIfNotCd(player, baseBlocks, privateSbData);
+        }
+        return baseBlocks;
+    }
+
+    private static void findBaseBlockIfNotCd(Player player, List<BaseBlock> baseBlocks, TownSpecialBlockData publicSpecialData) {
+        List<SpecialBlockData> blocks = publicSpecialData.getSpecialBlocks();
+        for (SpecialBlockData block : blocks) {
+            BlockCoolDownData coolDownData = publicSpecialData.getBlockCoolDowns().stream()
+                    .filter(r -> player.getUniqueId().toString().equals(r.getGainPlayerUid())
+                            && block.getBlockUuid().equals(r.getBlockUuid()))
+                    .findFirst().orElse(null);
+            if(coolDownData == null){
+                BaseBlock baseBlock = getBaseBlockFromSbData(block);
+                baseBlock.setUid(block.getBlockUuid());
+                baseBlocks.add(baseBlock);
+            }
+        }
     }
 }

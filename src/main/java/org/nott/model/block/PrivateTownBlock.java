@@ -16,16 +16,17 @@ import org.nott.exception.ProductException;
 import org.nott.model.Configuration;
 import org.nott.model.Message;
 import org.nott.model.abstracts.BaseBlock;
+import org.nott.model.data.BlockCoolDownData;
 import org.nott.model.data.LostResourceData;
+import org.nott.model.data.SpecialBlockData;
 import org.nott.model.data.TownSpecialBlockData;
 import org.nott.model.interfaces.Product;
+import org.nott.time.TimePeriod;
 import org.nott.time.Timer;
-import org.nott.utils.Messages;
-import org.nott.utils.PermissionUtils;
-import org.nott.utils.ProductUtils;
-import org.nott.utils.TownyUtils;
+import org.nott.utils.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -36,14 +37,65 @@ public class PrivateTownBlock extends BaseBlock implements Product {
     public void doGain(Player player) {
         SimpleTownyProduct.logger.info("Start gain in [%s] PrivateTownBlock For player: [%s]".formatted(this.getName(), player.getName()));
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
+        Configuration configuration = instance.getConfiguration();
         Message message = instance.getMessage();
         TownyAPI towny = TownyAPI.getInstance();
         Resident resident = towny.getResident(player);
         Town town = resident.getTownOrNull();
         String townId = town.getUUID().toString();
+        Location location = player.getLocation();
+        TownBlock townBlock = towny.getTownBlock(location);
+        Town atTown = towny.getTown(location);
+
+        if(atTown == null){
+            throw new ProductException(message.getNotInTown());
+        }
+        boolean isOwnTown = town.equals(atTown);
+        boolean gainPrivateNeedStandInBlock = configuration.isGainPrivateNeedStandInBlock();
+        boolean gainPrivateNeedStandInTown = configuration.isGainPrivateNeedStandInTown();
+        if (!isOwnTown) {
+            throw new ProductException(message.getMustInOwnTown());
+        }
+        List<TownBlock> townBlocks = new ArrayList<>();
+        if (gainPrivateNeedStandInTown) {
+            if (!atTown.getName().equals(town.getName())) {
+                SimpleTownyProduct.logger.log(Level.INFO, "Not in town. Skip.");
+                throw new ProductException(message.getMustStandInTown());
+            }
+            townBlocks.addAll(town.getTownBlocks());
+        } else if (gainPrivateNeedStandInBlock) {
+            if (townBlock == null || ProductUtils.isSpecialBlock(townBlock)) {
+                SimpleTownyProduct.logger.log(Level.INFO, "Not a Block. Skip.");
+                throw new ProductException(message.getMustStandInBlock());
+            }
+            townBlocks.add(townBlock);
+        } else {
+            throw new ProductException("Current not support other gain mode, except one: gainPrivateNeedStandInTown,gainPrivateNeedStandInTown");
+        }
+
         try {
             TownSpecialBlockData data = SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.get(townId);
+
             LostResourceData lost = data.getLost(this.getName());
+            SpecialBlockData specialBlockData = data.getSpecialBlocks().stream().filter(r -> this.getUid().equals(r.getBlockUuid())).findFirst().orElse(null);
+            if(specialBlockData == null){
+                return;
+            }
+            if(data.isCoolDown(specialBlockData.getType())) return;
+            List<BlockCoolDownData> blockCoolDowns = data.getBlockCoolDowns();
+            BlockCoolDownData blockCoolDownData = new BlockCoolDownData();
+            blockCoolDownData.setBlockUuid(specialBlockData.getBlockUuid());
+            blockCoolDownData.setCool(TimePeriod.fromStringGetVal(this.getGainCoolDown()));
+            blockCoolDownData.setGainTime(CommonUtils.HHMMDDHMS.format(new Date()));
+            blockCoolDownData.setGainPlayerUid(player.getUniqueId().toString());
+            blockCoolDownData.setGainPlayerName(player.getName());
+            blockCoolDowns.add(blockCoolDownData);
+            Timer timer = new Timer(specialBlockData.getBlockUuid(), this.getGainCoolDown());
+            timer.setTimerHandler(() -> {
+                // 当冷却时间到时删除冷却数据
+                blockCoolDowns.remove(blockCoolDownData);
+            });
+            timer.start();
             List<String> actuallyCommand = ProductUtils.formatBlockCommands(this, lost);
             ProductUtils.executeCommand(player, actuallyCommand);
             Messages.send(player, message.getSuccessGainProduct().formatted(this.getName()));

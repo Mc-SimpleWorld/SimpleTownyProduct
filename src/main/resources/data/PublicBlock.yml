@@ -1,0 +1,18 @@
+town_uuid: "town-uuid"
+town_name: "中立城镇"
+special_blocks:
+  - block_uuid: "plot-uuid-2"
+    type: '驿站'
+    claim_from_other: false
+    is_neutral: true
+    x: 123
+    y: 213
+    world:
+
+block_cool_downs:
+  - block_uuid: "plot-uuid-1"
+    gain_player_name: 123
+    gain_player_uid: 123
+    gain_time: '2025-03-03 10:57:13'
+    gain_count: 1000
+    cool: 36000

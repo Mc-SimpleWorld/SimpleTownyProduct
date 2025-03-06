@@ -11,13 +11,18 @@ import org.nott.SimpleTownyProduct;
 import org.nott.event.PlotGainProductEvent;
 import org.nott.exception.ConfigWrongException;
 import org.nott.exception.MethodNotSupportException;
+import org.nott.exception.ProductException;
 import org.nott.model.Message;
 import org.nott.model.abstracts.BaseBlock;
+import org.nott.model.data.BlockCoolDownData;
 import org.nott.model.interfaces.Product;
+import org.nott.time.Timer;
+import org.nott.utils.CommonUtils;
 import org.nott.utils.Messages;
 import org.nott.utils.PermissionUtils;
 import org.nott.utils.ProductUtils;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -32,31 +37,42 @@ public class PublicTownBlock extends BaseBlock implements Product {
         TownBlock currentBlock = towny.getTownBlock(location);
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
         Message message = instance.getMessage();
-        if (currentBlock == null) {
-            SimpleTownyProduct.logger.info("Not a Block. Skip.");
-            Messages.sendError(player, this.getName() + ":" + message.getMustStandInBlock());
-            return;
-        }
-        Town town = towny.getTown(player);
-        SpecialTownBlock blockTypes = instance.getConfiguration().getBlockTypes();
-        List<PublicTownBlock> publics = blockTypes.getPublics();
-        publics.stream().filter(publicTownBlock -> publicTownBlock.getName().equals(currentBlock.getType().getName())).findFirst().ifPresent(publicTownBlock -> {
-            String key = ProductUtils.publicBlockKey(this, player);
-            boolean inCoolDown = ProductUtils.isInCoolDown(key);
+        try {
+            if (currentBlock == null) {
+                SimpleTownyProduct.logger.info("Not a Block. Skip.");
+                throw new ProductException(this.getName() + ":" + message.getMustStandInBlock());
+            }
+            if (!ProductUtils.isSpecialBlock(currentBlock)) {
+                throw new ProductException(this.getName() + ":" + message.getNoSpecialBlock());
+            }
+            Town town = towny.getTown(player);
+            boolean inCoolDown = ProductUtils.isPublicBlockInCoolDown(player, this);
             if (inCoolDown) {
                 SimpleTownyProduct.logger.info("In cool down. Skip.");
                 return;
             }
-            try {
-                List<String> actuallyCommand = ProductUtils.formatBlockCommands(this, town);
-                ProductUtils.executeCommand(player, actuallyCommand);
-                Messages.send(player, message.getSuccessGainProduct().formatted(this.getName()));
-                BukkitTools.fireEvent(new PlotGainProductEvent(town, this, player));
-                ProductUtils.addCoolDown(key, this);
-            } catch (ConfigWrongException e) {
-                throw new RuntimeException(e);
-            }
-        });
+
+            List<String> actuallyCommand = ProductUtils.formatBlockCommands(this, town);
+            ProductUtils.executeCommand(player, actuallyCommand);
+            Messages.send(player, message.getSuccessGainProduct().formatted(this.getName()));
+            BukkitTools.fireEvent(new PlotGainProductEvent(town, this, player));
+            BlockCoolDownData cool = new BlockCoolDownData();
+            cool.setGainPlayerName(player.getName());
+            cool.setGainPlayerUid(player.getUniqueId().toString());
+            cool.setGainTime(CommonUtils.HHMMDDHMS.format(new Date()));
+            cool.setBlockUuid(this.getUid());
+            cool.setGainCount(1L);
+            List<BlockCoolDownData> blockCoolDowns = SimpleTownyProduct.PUBLIC_SPECIAL_DATA.getBlockCoolDowns();
+            blockCoolDowns.add(cool);
+            Timer timer = new Timer(this.getUid(), this.getGainCoolDown());
+            timer.setTimerHandler(() -> {
+                // 当冷却时间到时删除冷却数据
+                blockCoolDowns.remove(cool);
+            });
+            timer.start();
+        } catch (Exception e) {
+            Messages.sendError(player, e.getMessage());
+        }
     }
 
     @Override

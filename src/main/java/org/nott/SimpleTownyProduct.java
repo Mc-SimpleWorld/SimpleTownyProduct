@@ -22,6 +22,7 @@ import org.nott.command.ProductCommand;
 import org.nott.data.file.DataFileHandler;
 import org.nott.data.file.DataHandlerRegistrar;
 import org.nott.data.file.DataSource;
+import org.nott.data.file.TownSbDataFileHandler;
 import org.nott.model.*;
 import org.nott.model.abstracts.BaseBlock;
 import org.nott.model.activity.StealActivity;
@@ -66,6 +67,8 @@ public final class SimpleTownyProduct extends JavaPlugin {
 
     public static final Map<String, TownSpecialBlockData> TOWN_SPECIAL_BLOCK_DATA_MAP = new ConcurrentHashMap<>();
 
+    public static TownSpecialBlockData PUBLIC_SPECIAL_DATA = new TownSpecialBlockData();
+
     @Override
     public void onEnable() {
         // Plugin startup logic
@@ -101,82 +104,8 @@ public final class SimpleTownyProduct extends JavaPlugin {
     private void registerDataHandler() {
         String storageType = this.configuration.getDataBase().getStorageType();
         if (storageType.equalsIgnoreCase(DbTypeEnum.FILE.name())) {
-            this.saveResource("data/cooldown.txt", false);
-            this.saveResource("data/stolen.txt", false);
-            this.saveResource("data/steal-activity.txt", false);
-            String coolDownFilePath = this.getDataFolder() + File.separator + "data" + File.separator + "cooldown.txt";
-            String stolenFilePath = this.getDataFolder() + File.separator + "data" + File.separator + "stolen.txt";
-            String stealActivityPath = this.getDataFolder() + File.separator + "data" + File.separator + "steal-activity.txt";
-            File coolDownFile = new File(coolDownFilePath);
-            File stolenFile = new File(stolenFilePath);
-            File stealActivityFile = new File(stealActivityPath);
             this.dataHandlerRegistrar = DataHandlerRegistrar.Builder()
-                    .register(DataFileHandler.build(coolDownFile, new DataSource<>() {
-                        @Override
-                        public Map<String, String> getDataInMemory() {
-                            HashMap<String, String> data = new HashMap<>();
-                            for (String uuid : Timer.timerMap.keySet()) {
-                                Timer timer = Timer.timerMap.get(uuid);
-                                long endTime = timer.getEndTime();
-                                long period = endTime - System.currentTimeMillis();
-                                if (period > 0) {
-                                    data.put(uuid, period + "");
-                                }
-                            }
-                            return data;
-                        }
-
-                        @Override
-                        public void putDataToMemory() {
-                            Map<String, String> read = FileUtils.readByKeyValue(coolDownFile);
-                            for (String key : read.keySet()) {
-                                String data = read.get(key);
-                                Timer timer = new Timer(key, Long.parseLong(data));
-                                timer.start();
-                            }
-                        }
-                    }))
-                    .register(DataFileHandler.build(stolenFile, new DataSource<>() {
-                        @Override
-                        public Map<String, String> getDataInMemory() {
-                            HashMap<String, String> data = new HashMap<>();
-                            for (String uuid : Timer.lostProductTownMap.keySet()) {
-                                Long rate = Timer.lostProductTownMap.get(uuid);
-                                if (rate > 0) {
-                                    data.put(uuid, rate + "");
-                                }
-                            }
-                            return data;
-                        }
-
-                        @Override
-                        public void putDataToMemory() {
-                            Map<String, String> value = FileUtils.readByKeyValue(stolenFile);
-                            for (String key : value.keySet()) {
-                                String data = value.get(key);
-                                Timer.lostProductTownMap.put(key, Long.parseLong(data));
-                            }
-                        }
-                    }))
-                    .register(DataFileHandler.build(stolenFile, new DataSource<>() {
-                        @Override
-                        public Map<String, String> getDataInMemory() {
-                            HashMap<String, String> data = new HashMap<>();
-                            for (String act : Timer.runningStealActivity.keySet()) {
-                                data.put(act, new Gson().toJson(Timer.runningStealActivity.get(act)));
-                            }
-                            return data;
-                        }
-
-                        @Override
-                        public void putDataToMemory() {
-                            Map<String, String> value = FileUtils.readByKeyValue(stealActivityFile);
-                            for (String key : value.keySet()) {
-                                String activityJson = value.get(key);
-                                Timer.runningStealActivity.put(key, new Gson().fromJson(activityJson, StealActivity.class));
-                            }
-                        }
-                    }))
+                    .register(new TownSbDataFileHandler())
                     .build();
             logger.info("DataHandle Register success, type : [%s]".formatted(storageType));
         } else {

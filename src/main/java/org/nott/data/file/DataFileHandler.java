@@ -30,13 +30,13 @@ public class DataFileHandler implements DataHandler<Map<String, String>, File> {
 
 
     @Override
-    public Map<String, String> read() {
+    public Map<String, String> read(File file) {
         return FileUtils.readByKeyValue(file);
     }
 
     @Override
-    public void write(Map<String, String> d) {
-        FileUtils.writeByKeyValue(file, d);
+    public void write(Map<String, String> d, File f) {
+        FileUtils.writeByKeyValue(f, d);
     }
 
     @Override
@@ -63,13 +63,13 @@ public class DataFileHandler implements DataHandler<Map<String, String>, File> {
     }
 
     private void saveData() {
-        Map<String, String> data = this.read();
+        Map<String, String> data = this.read(this.file);
         if (data.isEmpty()) {
             data = new HashMap<>();
         }
         data.putAll(this.dataSource.getDataInMemory());
 
-        this.write(data);
+        this.write(data,this.file);
     }
 
     @Override

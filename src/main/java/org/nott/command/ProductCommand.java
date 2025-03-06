@@ -193,7 +193,6 @@ public class ProductCommand implements TabExecutor {
         Resident resident = TownyAPI.getInstance().getResident(player);
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
         Message message = instance.getMessage();
-        Configuration configuration = instance.getConfiguration();
         TownyAPI towny = TownyAPI.getInstance();
         if (resident == null) {
             Messages.sendError(commandSender, message.getNotInTown());
@@ -205,57 +204,13 @@ public class ProductCommand implements TabExecutor {
             return;
         }
         Location location = player.getLocation();
-        TownBlock townBlock = towny.getTownBlock(location);
         Town atTown = towny.getTown(location);
-        boolean isOwnTown = town.equals(atTown);
-        boolean gainPrivateNeedStandInBlock = configuration.isGainPrivateNeedStandInBlock();
-        boolean gainPrivateNeedStandInTown = configuration.isGainPrivateNeedStandInTown();
-        String townId = town.getUUID().toString();
-        TownSpecialBlockData data = SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.get(townId);
-        List<SpecialBlockData> specialBlocks = data.getSpecialBlocks();
-        if (!isOwnTown) {
-            throw new ProductException(message.getMustInOwnTown());
+        if(atTown == null){
+            throw new ProductException(message.getNotInTown());
         }
-        List<TownBlock> townBlocks = new ArrayList<>();
-        if (gainPrivateNeedStandInTown) {
-            if (!atTown.getName().equals(town.getName())) {
-                SimpleTownyProduct.logger.log(Level.INFO, "Not in town. Skip.");
-                throw new ProductException(message.getMustStandInTown());
-            }
-            townBlocks.addAll(town.getTownBlocks());
-        } else if (gainPrivateNeedStandInBlock) {
-            if (townBlock == null || ProductUtils.isSpecialBlock(townBlock)) {
-                SimpleTownyProduct.logger.log(Level.INFO, "Not a Block. Skip.");
-                throw new ProductException(message.getMustStandInBlock());
-            }
-            townBlocks.add(townBlock);
-        } else {
-            throw new ProductException("Current not support other gain mode, except one: gainPrivateNeedStandInTown,gainPrivateNeedStandInTown");
-        }
-
         // 异步处理地块收获产品逻辑
-        specialBlocks.forEach(specialBlockData -> {
-            try {
-                if(data.isCoolDown(specialBlockData.getType())) return;
-                BaseBlock block = ProductUtils.getBaseBlockFromSbData(specialBlockData);
-                block.doGain(player);
-                BlockCoolDownData blockCoolDownData = new BlockCoolDownData();
-                blockCoolDownData.setBlockUuid(specialBlockData.getBlockUuid());
-                blockCoolDownData.setCool(TimePeriod.fromStringGetVal(block.getGainCoolDown()));
-                blockCoolDownData.setGainTime(CommonUtils.HHMMDDHMS.format(new Date()));
-                blockCoolDownData.setGainPlayerUid(player.getUniqueId().toString());
-                blockCoolDownData.setGainPlayerName(player.getName());
-                data.getBlockCoolDowns().add(blockCoolDownData);
-                Timer timer = new Timer(specialBlockData.getBlockUuid(), block.getGainCoolDown());
-                timer.setTimerHandler(() -> {
-                    // TODO 当冷却时间到时删除冷却数据
-
-                });
-                timer.start();
-            } catch (ConfigWrongException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        List<BaseBlock> baseBlocks = ProductUtils.findSbFromTownBlocks(town, player);
+        baseBlocks.forEach(block -> block.doGain(player));
     }
 
     private void parseInfoCommand(CommandSender commandSender, String[] subArgs) {

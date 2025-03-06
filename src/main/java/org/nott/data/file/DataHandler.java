@@ -2,9 +2,9 @@ package org.nott.data.file;
 
 public interface DataHandler<Data, File> {
 
-    Data read();
+    Data read(File file);
 
-    void write(Data d);
+    void write(Data d, File file);
 
     void runOnBackground();
     

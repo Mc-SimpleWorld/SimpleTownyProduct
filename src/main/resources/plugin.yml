@@ -26,5 +26,7 @@ permissions:
       default: false
     publicgain:
       default: true
+    neutral:
+      default: op
     steal:
       default: false
