@@ -56,7 +56,7 @@ public abstract class BaseBlock {
     }
 
     public String generateUUId(TownBlock townBlock){
-        this.uid = townBlock.toString();
+        this.uid = townBlock.getWorldCoord().toString();
         return this.getUid();
     }
 }

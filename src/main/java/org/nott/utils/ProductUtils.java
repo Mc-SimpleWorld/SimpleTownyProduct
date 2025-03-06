@@ -203,29 +203,33 @@ public class ProductUtils {
         String townId = town.getUUID().toString();
         TownSpecialBlockData data = SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.containsKey(townId) ? SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.get(townId)
                 : TownSpecialBlockData.empty(town);
-        List<SpecialBlockData> specialBlocks = data.getSpecialBlocks();
+        boolean isNeutral = block instanceof PublicTownBlock;
         SpecialBlockData specialBlockData = new SpecialBlockData();
         specialBlockData.setBlockUuid(block.generateUUId(townBlock));
         specialBlockData.setType(block.getName());
-        specialBlockData.setNeutral(block instanceof PublicTownBlock);
+        specialBlockData.setNeutral(isNeutral);
         specialBlockData.setClaimFromOther(false);
-        specialBlocks.add(specialBlockData);
-        SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.put(townId, data);
+        if(!isNeutral){
+            List<SpecialBlockData> specialBlocks = data.getSpecialBlocks();
+            specialBlocks.add(specialBlockData);
+            SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.put(townId, data);
+        }else {
+            List<SpecialBlockData> specialBlocks = SimpleTownyProduct.PUBLIC_SPECIAL_DATA.getSpecialBlocks();
+            specialBlocks.add(specialBlockData);
+        }
+
     }
 
     public static void removeSbData(BaseBlock block, Town town, TownBlock townBlock){
         String townId = town.getUUID().toString();
-        if (!SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.containsKey(townId)) {
-            return;
-        }
         String uuId = block.generateUUId(townBlock);
-        TownSpecialBlockData data = SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.get(townId);
+        boolean isNeutral = block instanceof PublicTownBlock;
+        TownSpecialBlockData data = isNeutral ? SimpleTownyProduct.PUBLIC_SPECIAL_DATA : SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.get(townId);
         List<SpecialBlockData> specialBlocks = data.getSpecialBlocks();
         SpecialBlockData specialBlockData = specialBlocks.stream().filter(sb -> sb.getBlockUuid().equals(uuId)).findFirst().orElse(null);
         if(specialBlockData != null){
             specialBlocks.remove(specialBlockData);
         }
-        SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.put(townId, data);
     }
 
     public static BaseBlock getBaseBlockFromSbData(SpecialBlockData specialBlockData) {

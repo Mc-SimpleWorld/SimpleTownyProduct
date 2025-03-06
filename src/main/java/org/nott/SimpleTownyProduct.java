@@ -29,6 +29,7 @@ import org.nott.model.activity.StealActivity;
 import org.nott.model.block.PrivateTownBlock;
 import org.nott.model.block.PublicTownBlock;
 import org.nott.model.block.SpecialTownBlock;
+import org.nott.model.data.StealActivitiesData;
 import org.nott.model.data.TownSpecialBlockData;
 import org.nott.model.enums.DbTypeEnum;
 import org.nott.time.Timer;
@@ -68,6 +69,8 @@ public final class SimpleTownyProduct extends JavaPlugin {
     public static final Map<String, TownSpecialBlockData> TOWN_SPECIAL_BLOCK_DATA_MAP = new ConcurrentHashMap<>();
 
     public static TownSpecialBlockData PUBLIC_SPECIAL_DATA = new TownSpecialBlockData();
+
+    public static List<StealActivitiesData> STEAL_ACTIVITIES = new ArrayList<>();
 
     @Override
     public void onEnable() {

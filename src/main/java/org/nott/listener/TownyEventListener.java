@@ -17,6 +17,7 @@ import org.nott.model.block.PlayerPlotBlock;
 import org.nott.model.data.SpecialBlockData;
 import org.nott.model.data.TownSpecialBlockData;
 import org.nott.utils.Messages;
+import org.nott.utils.PermissionUtils;
 import org.nott.utils.ProductUtils;
 
 import java.util.Collection;
@@ -62,7 +63,8 @@ public class TownyEventListener implements Listener {
         }
         try {
             // 判断新特殊方块是否中立
-            if (targetBlockType != null && targetBlockType.isPublic() && !resident.isAdmin()) {
+            if (targetBlockType != null && targetBlockType.isPublic() &&
+                    !PermissionUtils.hasPermission(resident.getPlayer(), "towny.product.neutral")) {
                 throw new ProductException(Messages.format(message.getCannotClaimNeutral(), name));
             }
             if (fromBlockType == null || targetBlockType != null) {
