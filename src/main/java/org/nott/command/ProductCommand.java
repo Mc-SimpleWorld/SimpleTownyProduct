@@ -118,68 +118,61 @@ public class ProductCommand implements TabExecutor {
         Town town = townyAPI.getTown(location);
         Message message = SimpleTownyProduct.INSTANCE.getMessage();
         boolean beJailed = JailUtil.isQueuedToBeJailed(resident);
-        if(beJailed){
-            Messages.sendError(commandSender, message.getStealStillJailed());
-            return;
-        }
-        Configuration configuration = SimpleTownyProduct.INSTANCE.getConfiguration();
-        boolean stealFromTown = !configuration.isStealNeedInBlock();
-        List<BaseBlock> targetBlocks = new ArrayList<>();
-        if (!configuration.isBlockCanBeSteal()) {
-            Messages.sendError(commandSender, message.getNotOpenSteal());
-            return;
-        }
-        if (town == null) {
-            Messages.sendError(commandSender, message.getMustStandInTown());
-            return;
-        }
-        if (fromTown.equals(town)) {
-            Messages.sendError(commandSender, message.getNotAllowStealOwnTown());
-            return;
-        }
-        if (fromNation != null && fromNation.getTowns().contains(town)) {
-            Messages.sendError(commandSender, message.getNotAllowStealNationTown());
-            return;
-        }
-        if (!stealFromTown) {
-            TownBlock townBlock = townyAPI.getTownBlock(location);
-            if (townBlock == null) {
-                Messages.sendError(commandSender, message.getMustStandInBlock());
-                return;
+        boolean stealFromTown = false;
+        List<BaseBlock> targetBlocks = null;
+        try {
+            if(beJailed){
+                throw new ProductException(message.getStealStillJailed());
+            }
+            Configuration configuration = SimpleTownyProduct.INSTANCE.getConfiguration();
+            stealFromTown = !configuration.isStealNeedInBlock();
+            targetBlocks = new ArrayList<>();
+            if (!configuration.isBlockCanBeSteal()) {
+                throw new ProductException(message.getNotOpenSteal());
+            }
+            if (town == null) {
+                throw new ProductException(message.getMustStandInTown());
+            }
+            if (town.equals(fromTown)) {
+                throw new ProductException( message.getNotAllowStealOwnTown());
+            }
+            if (fromNation != null && fromNation.getTowns().contains(town)) {
+                throw new ProductException(message.getNotAllowStealNationTown());
+            }
+            if (stealFromTown) {
+                List<PlayerPlotBlock> plotBlocks = ProductUtils.getSpecialBlockFromTownBlock(town, false);
+                if (plotBlocks.isEmpty()) {
+                    throw new ProductException(message.getNoSpecialBlock());
+                }
+                targetBlocks = plotBlocks.stream().map(PlayerPlotBlock::getBlock)
+                        .filter(r -> !ProductUtils.isInCoolDown(ProductUtils.blockKey(r, town)))
+                        .collect(Collectors.toList());
+            } else {
+                TownBlock townBlock = townyAPI.getTownBlock(location);
+                if (townBlock == null) {
+                    throw new ProductException( message.getMustStandInBlock());
+                }
+
+                PlayerPlotBlock plotBlock = ProductUtils.findSpecialTownBlock(townBlock.getTypeName());
+                if (plotBlock == null) {
+                    throw new ProductException( message.getNotOnAnyBlock());
+                }
+                boolean blockPublic = plotBlock.isPublic();
+                if (blockPublic) {
+                    throw new ProductException(message.getPublicBlockCantSteal());
+                }
+                targetBlocks.add(plotBlock.getBlock());
+
+                if (ProductUtils.isInCoolDown(ProductUtils.blockKey(plotBlock.getBlock(), town))) {
+                    throw new ProductException(message.getTargetCoolingDown());
+                }
             }
 
-            PlayerPlotBlock plotBlock = ProductUtils.findSpecialTownBlock(townBlock.getTypeName());
-            if (plotBlock == null) {
-                Messages.sendError(commandSender, message.getNotOnAnyBlock());
-                return;
+            if (ProductUtils.isInCoolDown(ProductUtils.stealActivityKey(player))) {
+                throw new ProductException(message.getWaitForNextSteal());
             }
-            boolean blockPublic = plotBlock.isPublic();
-            if (blockPublic) {
-                Messages.sendError(commandSender, message.getPublicBlockCantSteal());
-                return;
-            }
-            targetBlocks.add(plotBlock.getBlock());
-
-            if (ProductUtils.isInCoolDown(ProductUtils.blockKey(plotBlock.getBlock(), town))) {
-                Messages.sendError(commandSender, message.getTargetCoolingDown());
-                return;
-            }
-
-        } else {
-            Collection<TownBlock> townBlocks = town.getTownBlocks();
-            List<PlayerPlotBlock> plotBlocks = ProductUtils.getSpecialBlockFromTownBlock(townBlocks, true);
-            if (plotBlocks.isEmpty()) {
-                Messages.sendError(commandSender, message.getNoSpecialBlock());
-                return;
-            }
-            targetBlocks = plotBlocks.stream().map(PlayerPlotBlock::getBlock)
-                    .filter(r -> !ProductUtils.isInCoolDown(ProductUtils.blockKey(r, town)))
-                    .collect(Collectors.toList());
-        }
-
-        if (ProductUtils.isInCoolDown(ProductUtils.stealActivityKey(player))) {
-            Messages.sendError(commandSender, message.getWaitForNextSteal());
-            return;
+        } catch (Exception e) {
+            Messages.sendError(commandSender, e.getMessage());
         }
 
         PrePlotStealEvent event = new PrePlotStealEvent(targetBlocks, player, town, stealFromTown);

@@ -25,6 +25,7 @@ import org.nott.time.Timer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ProductUtils {
 
@@ -173,19 +174,41 @@ public class ProductUtils {
         timer.start();
     }
 
-    public static List<PlayerPlotBlock> getSpecialBlockFromTownBlock(Collection<TownBlock> townBlocks, boolean needsPublic) {
+    public static List<PlayerPlotBlock> getSpecialBlockFromTownBlock(Town town, boolean needsPublic) {
         // 从TownBlock中获取注册的特殊Block
+        String townId = town.getUUID().toString();
+        Collection<TownBlock> townBlocks = town.getTownBlocks();
         Configuration configuration = SimpleTownyProduct.INSTANCE.getConfiguration();
-        SpecialTownBlock blockTypes = configuration.getBlockTypes();
-        List<PrivateTownBlock> privates = blockTypes.getPrivates();
-        List<PlayerPlotBlock> plotBlockList = privates.stream().filter(sb -> townBlocks.stream().anyMatch(tb -> tb.getTypeName().equals(sb.getName())))
-                .map(sb -> new PlayerPlotBlock(false, sb)).toList();
-        List<PlayerPlotBlock> list = new ArrayList<>(plotBlockList);
-        if(needsPublic){
-            List<PublicTownBlock> publics = blockTypes.getPublics();
-            list.addAll(publics.stream().map(sb -> new PlayerPlotBlock(true, sb)).toList());
+        List<PrivateTownBlock> privates = configuration.getBlockTypes().getPrivates();
+        TownSpecialBlockData data = SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.get(townId);
+        List<SpecialBlockData> specialBlocks = data.getSpecialBlocks();
+        List<PlayerPlotBlock> plotBlocks = new ArrayList<>();
+        for (TownBlock townBlock : townBlocks) {
+            String uuId = new PrivateTownBlock().generateUUId(townBlock);
+            SpecialBlockData blockData = specialBlocks.stream().filter(sb -> uuId.equals(sb.getBlockUuid())).findFirst().orElse(null);
+            if(blockData == null) continue;
+            PrivateTownBlock privateTownBlock = privates.stream().filter(p -> blockData.getType().equals(p.getName())).findFirst().orElse(null);
+            if(privateTownBlock == null) continue;
+            privateTownBlock.setUid(uuId);
+            plotBlocks.add(new PlayerPlotBlock(townBlock, false, privateTownBlock, blockData));
         }
-        return list;
+        if(needsPublic){
+            List<PublicTownBlock> publics = configuration.getBlockTypes().getPublics();
+            List<SpecialBlockData> publicSpecialDataSpecialBlocks = SimpleTownyProduct.PUBLIC_SPECIAL_DATA.getSpecialBlocks();
+            String townName = SimpleTownyProduct.PUBLIC_SPECIAL_DATA.getTownName();
+            Town publicTown = TownyAPI.getInstance().getTown(townName);
+            Collection<TownBlock> blocks = publicTown.getTownBlocks();
+            for (TownBlock block : blocks) {
+                String uuId = new PublicTownBlock().generateUUId(block);
+                SpecialBlockData blockData = publicSpecialDataSpecialBlocks.stream().filter(sb -> uuId.equals(sb.getBlockUuid())).findFirst().orElse(null);
+                if(blockData == null) continue;
+                PublicTownBlock publicTownBlock  = publics.stream().filter(p -> blockData.getType().equals(p.getName())).findFirst().orElse(null);
+                if(publicTownBlock == null) continue;
+                publicTownBlock.setUid(uuId);
+                plotBlocks.add(new PlayerPlotBlock(block, true, publicTownBlock, blockData));
+            }
+        }
+        return plotBlocks;
     }
 
     public static PlayerPlotBlock getSpecialBlockPlayerLoc(Player player){

@@ -120,7 +120,7 @@ public class ProductAdminCommand implements TabExecutor {
             if (town == null) {
                 throw new ProductException(Messages.format(message.getTownNotFound(), townName));
             }
-            List<PlayerPlotBlock> block = ProductUtils.getSpecialBlockFromTownBlock(town.getTownBlocks(), false);
+            List<PlayerPlotBlock> block = ProductUtils.getSpecialBlockFromTownBlock(town, false);
             if ("*".equalsIgnoreCase(blockName)) {
                 for (PlayerPlotBlock plotBlock : block) {
                     BaseBlock baseBlock = plotBlock.getBlock();
