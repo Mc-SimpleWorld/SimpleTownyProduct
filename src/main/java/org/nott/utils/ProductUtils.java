@@ -59,6 +59,31 @@ public class ProductUtils {
 
     }
 
+    public static PlayerPlotBlock findSpecialFromLocation(Player player) throws Exception{
+        TownyAPI townyAPI = TownyAPI.getInstance();
+        Location location = player.getLocation();
+        Town town = townyAPI.getTown(location);
+        String uid = town.getUUID().toString();
+        TownBlock townBlock = townyAPI.getTownBlock(location);
+        String typeName = townBlock.getTypeName();
+        SpecialTownBlock blockTypes = SimpleTownyProduct.INSTANCE.configuration.getBlockTypes();
+        List<PrivateTownBlock> privates = blockTypes.getPrivates();
+        PrivateTownBlock privateTownBlock = privates.stream().filter(publicTownBlock -> publicTownBlock.getName().equals(typeName)).findFirst().orElse(null);
+        if(privateTownBlock != null){
+            PlayerPlotBlock plotBlock = new PlayerPlotBlock(false, privateTownBlock);
+            String uuId = plotBlock.getBlock().generateUUId(townBlock);
+            TownSpecialBlockData data = SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.get(uid);
+            if(data == null){
+                return null;
+            }
+            plotBlock.setSpecialBlockData(data.getSpecialBlocks().stream().filter(sb -> sb.getBlockUuid().equals(uuId)).findFirst().get());
+            plotBlock.setPublic(false);
+            return plotBlock;
+        }
+        return null;
+
+    }
+
     public static Long calculatedBlockCapacity(BaseBlock block, Town town) throws ConfigWrongException{
         Integer baseGainNumber = block.getBaseGainNumber();
         if(baseGainNumber <= 0){
@@ -93,6 +118,16 @@ public class ProductUtils {
         return Timer.timerMap.containsKey(key);
     }
 
+    public static boolean isPrivateBlockInCoolDown(Town town, BaseBlock block) {
+        String townId = town.getUUID().toString();
+        TownSpecialBlockData data = SimpleTownyProduct.TOWN_SPECIAL_BLOCK_DATA_MAP.get(townId);
+        if (data == null) {
+            return false;
+        }
+        String uid = block.getUid();
+        return data.getBlockCoolDowns().stream().anyMatch(r -> r.getBlockUuid().equals(uid));
+    }
+
     public static boolean isPublicBlockInCoolDown(Player player, BaseBlock block) {
         List<BlockCoolDownData> blockCoolDowns = SimpleTownyProduct.PUBLIC_SPECIAL_DATA.getBlockCoolDowns();
         String uid = block.getUid();
@@ -110,24 +145,8 @@ public class ProductUtils {
         new Timer(key, val).start();
     }
 
-    public static Long getCoolDown(String key) {
-        if (!isInCoolDown(key)) {
-            return 0L;
-        }
-        Timer timer = Timer.timerMap.get(key);
-        return timer.getEndTime() - System.currentTimeMillis();
-    }
-
     public static String stolenKey(BaseBlock block, Town town){
         return block.getName() + ":" + town.getUUID();
-    }
-
-    public static String stolenKey(Town town){
-        return "stolen" + ":" + town.getUUID();
-    }
-
-    public static String playerKey(Player player){
-        return player.getUniqueId().toString();
     }
 
     public static String stealActivityKey(Player player){
@@ -162,16 +181,6 @@ public class ProductUtils {
             }
 
         });
-    }
-
-    public static void addCoolDown(String uuid, BaseBlock block) {
-        Timer timer = new Timer(uuid, block.getGainCoolDown());
-        timer.start();
-    }
-
-    public static void addCoolDown(String uuid, long cool) {
-        Timer timer = new Timer(uuid, cool);
-        timer.start();
     }
 
     public static List<PlayerPlotBlock> getSpecialBlockFromTownBlock(Town town, boolean needsPublic) {

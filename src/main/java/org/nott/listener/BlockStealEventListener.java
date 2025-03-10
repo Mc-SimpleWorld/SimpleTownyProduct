@@ -16,14 +16,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.nott.SimpleTownyProduct;
 import org.nott.event.PlotBeStealEvent;
 import org.nott.event.PlotStealEndEvent;
 import org.nott.event.PlotStealInterruptEvent;
 import org.nott.event.PrePlotStealEvent;
-import org.nott.exception.ConfigWrongException;
 import org.nott.model.Configuration;
 import org.nott.model.Message;
 import org.nott.model.activity.StealActivity;
@@ -31,9 +29,9 @@ import org.nott.model.abstracts.BaseBlock;
 import org.nott.time.TimePeriod;
 import org.nott.time.Timer;
 import org.nott.utils.Messages;
-import org.nott.utils.ProductUtils;
-
+import org.nott.utils.PermissionUtils;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -60,7 +58,7 @@ public class BlockStealEventListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockBeStealEventListener(PlotBeStealEvent plotBeStealEvent) throws ConfigWrongException {
+    public void onBlockBeStealEventListener(PlotBeStealEvent plotBeStealEvent) throws Exception {
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
         Configuration configuration = instance.getConfiguration();
         Message message = instance.getMessage();
@@ -71,7 +69,7 @@ public class BlockStealEventListener implements Listener {
         List<BaseBlock> targetBlock = plotBeStealEvent.getTargetBlock();
         StealActivity activity = new StealActivity(plotBeStealEvent);
         // 添加偷窃冷却
-         ProductUtils.addCoolDown(Timer.STEAL_KEY + player.getUniqueId(), TimePeriod.fromStringGetVal(configuration.getStealCoolDown()));
+         SimpleTownyProduct.STEAL_ACTIVITIES.add(activity.toData());
         // 若小偷在偷取中PVP死亡，将会被送入监狱并取消偷窃事件
         town.setPVP(true);
         SimpleTownyProduct.SCHEDULER.runTaskAsynchronously(instance, () -> {
@@ -158,21 +156,19 @@ public class BlockStealEventListener implements Listener {
         Long lost = event.getLost();
         Town town = event.getTown();
         BaseBlock block = event.getBlock();
-        // TODO 发送给拥有gain权限的人
-        // 现在发给在线的市长
-        Resident mayor = town.getMayor();
-        if (mayor.isOnline()) {
-            Messages.send(mayor.getPlayer(), instance.getMessage().getBeStolenWarning()
-                    .formatted(town.getName(), block.getName(), thiefName, lost));
-            return;
+        // 发送给拥有gain权限的人
+        Collection<? extends Player> onlinePlayers = instance.getServer().getOnlinePlayers();
+        for (Player player : onlinePlayers) {
+            if(PermissionUtils.hasPermission(player, "towny.product.gain")){
+                Messages.send(player, instance.getMessage().getBeStolenWarning()
+                        .formatted(town.getName(), block.getName(), thiefName, lost));
+            }
         }
         SimpleTownyProduct.logger.info("PlotStealEndEvent fired");
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onStealingPlayPvPDeathEventListener(PlayerDeathEvent event) {
-        EntityDamageEvent entityDamageEvent = event.getEntity().getLastDamageCause();
-//        Entity entity = entityDamageEvent.getDamageSource().getCausingEntity();
         Player player = event.getPlayer();
         if (Timer.runningStealActivity.containsKey(player.getUniqueId().toString())) {
             StealActivity activity = Timer.runningStealActivity.get(player.getUniqueId().toString());

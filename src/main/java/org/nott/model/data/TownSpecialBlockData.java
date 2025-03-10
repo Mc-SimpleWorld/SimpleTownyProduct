@@ -50,7 +50,8 @@ public class TownSpecialBlockData {
         if(specialBlockData == null){
             throw new ProductException("SpecialBlockData not found for " + type);
         }
-        BlockCoolDownData blockCoolDown = blockCoolDowns.stream().filter(blockCoolDownData -> specialBlockData.getBlockUuid().equals(blockCoolDownData.getBlockUuid())).findFirst().orElse(null);
+        BlockCoolDownData blockCoolDown = blockCoolDowns.stream()
+                .filter(blockCoolDownData -> specialBlockData.getBlockUuid().equals(blockCoolDownData.getBlockUuid())).findFirst().orElse(null);
         return blockCoolDown;
     }
 

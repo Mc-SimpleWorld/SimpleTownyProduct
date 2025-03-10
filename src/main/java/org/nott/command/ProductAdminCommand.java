@@ -124,20 +124,16 @@ public class ProductAdminCommand implements TabExecutor {
             if ("*".equalsIgnoreCase(blockName)) {
                 for (PlayerPlotBlock plotBlock : block) {
                     BaseBlock baseBlock = plotBlock.getBlock();
-                    String key = ProductUtils.blockKey(baseBlock, town);
-                    if (ProductUtils.isInCoolDown(key)) {
-                        ProductUtils.setCoolDown(key, parsePeriod);
+                    if (ProductUtils.isPrivateBlockInCoolDown(town, baseBlock)) {
+                        // todo 设置冷却
+//                        ProductUtils.setCoolDown(baseBlock, parsePeriod);
                         Messages.send(commandSender, message.getSuccessSetBlockCool(), town.getName(), baseBlock.getName(), period);
                     }
                 }
             } else {
-                PlayerPlotBlock plotBlock = ProductUtils.findSpecialTownBlock(blockName, town);
-                if (plotBlock == null) {
-                    throw new ProductException(Messages.format(message.getBlockNotFound(), blockName));
-                }
-                BaseBlock baseBlock = plotBlock.getBlock();
-                ProductUtils.setCoolDown(ProductUtils.blockKey(plotBlock.getBlock(), town), parsePeriod);
-                Messages.send(commandSender, message.getSuccessSetBlockCool(), town.getName(), baseBlock.getName(), period);
+                // todo 根据名称查找该城镇的地块
+                // todo 设置冷却
+                Messages.send(commandSender, message.getSuccessSetBlockCool(), town.getName(), blockName, period);
             }
         }
         if ("public".equalsIgnoreCase(type)) {
@@ -152,7 +148,7 @@ public class ProductAdminCommand implements TabExecutor {
             List<PublicTownBlock> publics = configuration.getBlockTypes().getPublics();
             if ("*".equals(blockName)) {
                 for (PublicTownBlock block : publics) {
-                    ProductUtils.setCoolDown(ProductUtils.publicBlockKey(block, resident.getPlayer()), parsePeriod);
+                    // todo 设置冷却
                 }
             } else {
                 PublicTownBlock specialBlock = publics.stream().filter(publicTownBlock -> blockName.equals(publicTownBlock.getName()))
@@ -160,7 +156,7 @@ public class ProductAdminCommand implements TabExecutor {
                 if (specialBlock == null) {
                     throw new ProductException(Messages.format(message.getBlockNotFound(), blockName));
                 }
-                ProductUtils.setCoolDown(ProductUtils.publicBlockKey(specialBlock, resident.getPlayer()), parsePeriod);
+                // todo 设置冷却
             }
         }
     }

@@ -15,11 +15,16 @@ import org.nott.event.PlotBeStealEvent;
 import org.nott.model.Configuration;
 import org.nott.model.Message;
 import org.nott.model.abstracts.BaseBlock;
+import org.nott.model.data.StealActivitiesData;
+import org.nott.time.TimePeriod;
 import org.nott.time.Timer;
 import org.nott.utils.CommonUtils;
 
+import java.sql.Timestamp;
 import java.time.Duration;
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Nott
@@ -120,5 +125,17 @@ public class StealActivity {
         Title title = Title.title(mainTitle, subtitle, Title.Times.times(Duration.ofSeconds(3), Duration.ofSeconds(5), Duration.ofMillis(2)));
         thief.showTitle(title);
         SimpleTownyProduct.logger.info("activity finish");
+    }
+
+    public StealActivitiesData toData() throws Exception{
+        StealActivitiesData data = new StealActivitiesData();
+        data.setActivityId(this.getUuid());
+        data.setStartTime(new Timestamp(new Date().getTime()));
+        data.setEndTime(new Timestamp(new Date().getTime() + TimePeriod.fromStringGetVal(SimpleTownyProduct.INSTANCE.getConfiguration().getStealNeedStandInTime())));
+        data.setThiefName(this.thief.getName());
+        data.setThiefUuid(this.thief.getName());
+        data.setTargetTownUuid(getTargetTown().getUUID().toString());
+        data.setTargetPlotUuid(this.blocks.stream().map(BaseBlock::getUid).collect(Collectors.toList()));
+        return data;
     }
 }

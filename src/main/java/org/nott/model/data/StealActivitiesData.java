@@ -3,6 +3,7 @@ package org.nott.model.data;
 import lombok.Data;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * @author Nott
@@ -19,7 +20,7 @@ public class StealActivitiesData {
 
     private String targetTownUuid;
 
-    private String targetPlotUuid;
+    private List<String> targetPlotUuid;
 
     private Timestamp startTime;
 

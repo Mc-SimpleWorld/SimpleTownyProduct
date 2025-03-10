@@ -29,10 +29,7 @@ import org.nott.model.Message;
 import org.nott.model.block.PlayerPlotBlock;
 import org.nott.model.abstracts.BaseBlock;
 import org.nott.model.block.PrivateTownBlock;
-import org.nott.model.data.BlockCoolDownData;
-import org.nott.model.data.LostResourceData;
-import org.nott.model.data.SpecialBlockData;
-import org.nott.model.data.TownSpecialBlockData;
+import org.nott.model.data.*;
 import org.nott.time.TimePeriod;
 import org.nott.time.Timer;
 import org.nott.time.TimerHandler;
@@ -104,8 +101,6 @@ public class ProductCommand implements TabExecutor {
         Messages.sendMessages(commandSender, Messages.buildProductScreen(texts));
     }
 
-
-
     private void parseStealCommand(CommandSender commandSender, String[] args) {
         //  使用权限管理
         Player player = (Player) commandSender;
@@ -116,11 +111,18 @@ public class ProductCommand implements TabExecutor {
         Town fromTown = townyAPI.getResidentTownOrNull(resident);
         Nation fromNation = townyAPI.getResidentNationOrNull(resident);
         Town town = townyAPI.getTown(location);
+        String townId = town.getUUID().toString();
         Message message = SimpleTownyProduct.INSTANCE.getMessage();
         boolean beJailed = JailUtil.isQueuedToBeJailed(resident);
         boolean stealFromTown = false;
         List<BaseBlock> targetBlocks = null;
         try {
+            StealActivitiesData stealActivitiesData = SimpleTownyProduct.STEAL_ACTIVITIES.stream()
+                    .filter(sa -> sa.getThiefUuid().equals(player.getUniqueId().toString()) && sa.getTargetTownUuid().equals(townId))
+                    .findFirst().orElse(null);
+            if(stealActivitiesData != null){
+                throw new ProductException(message.getWaitForNextSteal());
+            }
             if(beJailed){
                 throw new ProductException(message.getStealStillJailed());
             }
@@ -153,9 +155,9 @@ public class ProductCommand implements TabExecutor {
                     throw new ProductException( message.getMustStandInBlock());
                 }
 
-                PlayerPlotBlock plotBlock = ProductUtils.findSpecialTownBlock(townBlock.getTypeName());
+                PlayerPlotBlock plotBlock = ProductUtils.findSpecialFromLocation(player);
                 if (plotBlock == null) {
-                    throw new ProductException( message.getNotOnAnyBlock());
+                    throw new ProductException(message.getNotOnAnyBlock());
                 }
                 boolean blockPublic = plotBlock.isPublic();
                 if (blockPublic) {
@@ -168,9 +170,6 @@ public class ProductCommand implements TabExecutor {
                 }
             }
 
-            if (ProductUtils.isInCoolDown(ProductUtils.stealActivityKey(player))) {
-                throw new ProductException(message.getWaitForNextSteal());
-            }
         } catch (Exception e) {
             Messages.sendError(commandSender, e.getMessage());
         }
