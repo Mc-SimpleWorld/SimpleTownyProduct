@@ -147,7 +147,7 @@ public class ProductCommand implements TabExecutor {
                     throw new ProductException(message.getNoSpecialBlock());
                 }
                 targetBlocks = plotBlocks.stream().map(PlayerPlotBlock::getBlock)
-                        .filter(r -> !ProductUtils.isInCoolDown(ProductUtils.blockKey(r, town)))
+                        .filter(r -> !ProductUtils.isPrivateBlockInCoolDown(town, r))
                         .collect(Collectors.toList());
             } else {
                 TownBlock townBlock = townyAPI.getTownBlock(location);
@@ -165,7 +165,7 @@ public class ProductCommand implements TabExecutor {
                 }
                 targetBlocks.add(plotBlock.getBlock());
 
-                if (ProductUtils.isInCoolDown(ProductUtils.blockKey(plotBlock.getBlock(), town))) {
+                if (ProductUtils.isPrivateBlockInCoolDown(town, plotBlock.getBlock())) {
                     throw new ProductException(message.getTargetCoolingDown());
                 }
             }
@@ -181,28 +181,40 @@ public class ProductCommand implements TabExecutor {
     private void parseGainCommand(CommandSender commandSender) {
         Player player = (Player) commandSender;
         //  使用权限管理
-        PermissionUtils.checkPermission(player, "towny.product.gain");
-        Resident resident = TownyAPI.getInstance().getResident(player);
-        SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
-        Message message = instance.getMessage();
-        TownyAPI towny = TownyAPI.getInstance();
-        if (resident == null) {
-            Messages.sendError(commandSender, message.getNotInTown());
-            return;
+        try {
+            PermissionUtils.checkPermission(player, "towny.product.gain");
+            Resident resident = TownyAPI.getInstance().getResident(player);
+            SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
+            Message message = instance.getMessage();
+            TownyAPI towny = TownyAPI.getInstance();
+            if (resident == null) {
+                throw new ProductException(message.getNotInTown());
+            }
+            Town town = resident.getTownOrNull();
+            if (town == null) {
+                throw new ProductException(message.getNotInTown());
+            }
+            Location location = player.getLocation();
+            Town atTown = towny.getTown(location);
+            if (atTown == null) {
+                throw new ProductException(message.getNotInTown());
+            }
+            Configuration configuration = SimpleTownyProduct.INSTANCE.getConfiguration();
+            List<BaseBlock> baseBlocks = new ArrayList<>();
+            if (configuration.isGainPrivateNeedStandInBlock()) {
+                baseBlocks.addAll(ProductUtils.findSbFromTownBlocks(town, player));
+            } else if (configuration.isGainPrivateNeedStandInTown()) {
+                PlayerPlotBlock plotBlock = ProductUtils.findSpecialFromLocation(player);
+                if (plotBlock == null) {
+                    throw new ProductException(message.getNotOnAnyBlock());
+                }
+                baseBlocks.add(plotBlock.getBlock());
+            }
+            // 异步处理地块收获产品逻辑
+            baseBlocks.forEach(block -> block.doGain(player));
+        } catch (Exception e) {
+            Messages.sendError(commandSender, e.getMessage());
         }
-        Town town = resident.getTownOrNull();
-        if (town == null) {
-            Messages.sendError(commandSender, message.getNotInTown());
-            return;
-        }
-        Location location = player.getLocation();
-        Town atTown = towny.getTown(location);
-        if(atTown == null){
-            throw new ProductException(message.getNotInTown());
-        }
-        // 异步处理地块收获产品逻辑
-        List<BaseBlock> baseBlocks = ProductUtils.findSbFromTownBlocks(town, player);
-        baseBlocks.forEach(block -> block.doGain(player));
     }
 
     private void parseInfoCommand(CommandSender commandSender, String[] subArgs) {

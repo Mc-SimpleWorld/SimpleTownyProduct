@@ -96,7 +96,7 @@ public class PrivateTownBlock extends BaseBlock implements Product {
                 blockCoolDowns.remove(blockCoolDownData);
             });
             timer.start();
-            List<String> actuallyCommand = ProductUtils.formatBlockCommands(this, lost);
+            List<String> actuallyCommand = ProductUtils.formatBlockCommands(this, lost.getLostAmount());
             ProductUtils.executeCommand(player, actuallyCommand);
             Messages.send(player, message.getSuccessGainProduct().formatted(this.getName()));
             BukkitTools.fireEvent(new PlotGainProductEvent(town, this, player));
@@ -116,21 +116,23 @@ public class PrivateTownBlock extends BaseBlock implements Product {
             Messages.sendError(player, message.getNotOnAnyBlock());
             return;
         }
-        PlayerPlotBlock playerPlotBlock = ProductUtils.getSpecialBlockPlayerLoc(player);
-        if (playerPlotBlock == null) {
-            Messages.sendError(player, message.getNoSpecialBlock());
-            return;
-        }
         try {
+            PlayerPlotBlock playerPlotBlock = ProductUtils.findSpecialFromLocation(player);
+            if (playerPlotBlock == null) {
+                Messages.sendError(player, message.getNoSpecialBlock());
+                return;
+            }
             BaseBlock block = playerPlotBlock.getBlock();
             Long capacity = ProductUtils.calculatedBlockCapacity(block, town);
             Double stealRate = configuration.getStealRate();
             long stolen = Math.round(capacity * stealRate);
             List<String> commands = ProductUtils.formatBlockCommands(block, stolen);
             ProductUtils.executeCommand(player, commands);
-            Timer.lostProductTownMap.put(ProductUtils.stolenKey(this, town), stolen);
+            // todo 设置城镇被偷窃冷却
+
             BukkitTools.fireEvent(new PlotStealEndEvent(town, stolen, player.getName(), this));
-        } catch (ConfigWrongException e) {
+        } catch (Exception e) {
+            Messages.sendError(player, e.getMessage());
             throw new RuntimeException(e);
         }
     }

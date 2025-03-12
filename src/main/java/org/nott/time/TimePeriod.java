@@ -4,7 +4,6 @@ import org.nott.exception.ConfigWrongException;
 
 public enum TimePeriod {
 
-    // 1S = 20 ticks
     S(1000L),
     MIN(60 * 1000L),
     HOUR(60 * 60 * 1000L),

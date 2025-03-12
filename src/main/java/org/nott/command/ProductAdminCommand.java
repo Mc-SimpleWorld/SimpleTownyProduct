@@ -104,7 +104,7 @@ public class ProductAdminCommand implements TabExecutor {
         }
         Player player = resident.getPlayer();
         String period = args[2];
-        ProductUtils.setCoolDown(ProductUtils.stealActivityKey(player), Long.parseLong(period));
+        // todo 设置冷却
     }
 
     private static void parseSetBlockCoolDownCommand(CommandSender commandSender, String[] args, TownyAPI townyAPI, Message message) {
@@ -126,7 +126,7 @@ public class ProductAdminCommand implements TabExecutor {
                     BaseBlock baseBlock = plotBlock.getBlock();
                     if (ProductUtils.isPrivateBlockInCoolDown(town, baseBlock)) {
                         // todo 设置冷却
-//                        ProductUtils.setCoolDown(baseBlock, parsePeriod);
+
                         Messages.send(commandSender, message.getSuccessSetBlockCool(), town.getName(), baseBlock.getName(), period);
                     }
                 }

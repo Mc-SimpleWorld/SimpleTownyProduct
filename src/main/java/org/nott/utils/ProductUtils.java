@@ -29,6 +29,9 @@ import java.util.stream.Collectors;
 
 public class ProductUtils {
 
+    /**
+     * 根据名称获取已注册的特殊区块类型
+     */
     public static PlayerPlotBlock findSpecialTownBlock(String typeName){
         SpecialTownBlock blockTypes = SimpleTownyProduct.INSTANCE.configuration.getBlockTypes();
         List<PublicTownBlock> publics = blockTypes.getPublics();
@@ -45,20 +48,9 @@ public class ProductUtils {
 
     }
 
-    public static PlayerPlotBlock findSpecialTownBlock(String typeName, Town town){
-        PlayerPlotBlock block = findSpecialTownBlock(typeName);
-        if(block == null){
-            return null;
-        }
-        Collection<TownBlock> townBlocks = town.getTownBlocks();
-        TownBlock townBlock = townBlocks.stream().filter(tb -> typeName.equals(tb.getTypeName())).findFirst().orElse(null);
-        if(townBlock == null){
-            return null;
-        }
-        return block;
-
-    }
-
+    /**
+     * 寻找玩家脚下的特殊区块信息
+     */
     public static PlayerPlotBlock findSpecialFromLocation(Player player) throws Exception{
         TownyAPI townyAPI = TownyAPI.getInstance();
         Location location = player.getLocation();
@@ -84,6 +76,20 @@ public class ProductUtils {
 
     }
 
+    /**
+     * 判断TownBlock是否为特殊区块
+     */
+    public static boolean isSpecialBlock(TownBlock townBlock){
+        Configuration configuration = SimpleTownyProduct.INSTANCE.getConfiguration();
+        SpecialTownBlock blockTypes = configuration.getBlockTypes();
+        return blockTypes.getPrivates().stream().anyMatch(block -> block.getName().equals(townBlock.getTypeName())) ||
+                blockTypes.getPublics().stream().anyMatch(block -> block.getName().equals(townBlock.getTypeName()));
+    }
+
+
+    /**
+     * 计算特殊区块的产能
+     */
     public static Long calculatedBlockCapacity(BaseBlock block, Town town) throws ConfigWrongException{
         Integer baseGainNumber = block.getBaseGainNumber();
         if(baseGainNumber <= 0){
@@ -100,9 +106,7 @@ public class ProductUtils {
 
     public static List<String> formatBlockCommands(BaseBlock block, Town town) throws ConfigWrongException {
         Long blockCapacity = calculatedBlockCapacity(block, town);
-        if(Timer.lostProductTownMap.containsKey(town.getUUID().toString())){
-            blockCapacity -= Timer.lostProductTownMap.get(town.getUUID().toString());
-        }
+        // TODO 减去已被偷窃的产能数
         return formatBlockCommands(block, blockCapacity);
     }
 
@@ -114,8 +118,19 @@ public class ProductUtils {
         return block.getGainCommand().stream().map(command -> command.replaceAll("\\{\\{PRODUCT_NUMBER}}", blockCapacity + "")).toList();
     }
 
-    public static boolean isInCoolDown(String key) {
-        return Timer.timerMap.containsKey(key);
+    public static void executeCommand(Player player, List<String> command) {
+        command.forEach(s -> {
+            String realCommand = PlaceholderAPI.setPlaceholders(player, s);
+            if (realCommand.startsWith("[console]")) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), realCommand.substring(9));
+                return;
+            }
+            if (realCommand.startsWith("[player]")) {
+                Bukkit.dispatchCommand(player, realCommand.substring(8));
+                return;
+            }
+
+        });
     }
 
     public static boolean isPrivateBlockInCoolDown(Town town, BaseBlock block) {
@@ -134,53 +149,6 @@ public class ProductUtils {
         String playerId = player.getUniqueId().toString();
         return blockCoolDowns.stream().filter(r -> uid.equals(r.getBlockUuid()) && playerId.equals(r.getGainPlayerUid()))
                 .findFirst().orElse(null) != null;
-    }
-
-    public static void setCoolDown(String key, Long val) {
-        Timer.timerMap.remove(key);
-        Timer timer = Timer.timers.stream().filter(r -> "key".equals(r.getKey())).findFirst().orElse(null);
-        if(timer != null){
-            Timer.timers.remove(timer);
-        }
-        new Timer(key, val).start();
-    }
-
-    public static String stolenKey(BaseBlock block, Town town){
-        return block.getName() + ":" + town.getUUID();
-    }
-
-    public static String stealActivityKey(Player player){
-        return Timer.STEAL_KEY + player.getUniqueId();
-    }
-
-    public static String blockKey(BaseBlock block, Town town){
-        return block.getName() + ":" + town.getUUID();
-    }
-
-    public static String publicBlockKey(BaseBlock block, Player player){
-        return block.getName() + ":" + player.getUniqueId();
-    }
-
-    public static boolean isSpecialBlock(TownBlock townBlock){
-        Configuration configuration = SimpleTownyProduct.INSTANCE.getConfiguration();
-        SpecialTownBlock blockTypes = configuration.getBlockTypes();
-        return blockTypes.getPrivates().stream().anyMatch(block -> block.getName().equals(townBlock.getTypeName())) ||
-                blockTypes.getPublics().stream().anyMatch(block -> block.getName().equals(townBlock.getTypeName()));
-    }
-
-    public static void executeCommand(Player player, List<String> command) {
-        command.forEach(s -> {
-            String realCommand = PlaceholderAPI.setPlaceholders(player, s);
-            if (realCommand.startsWith("[console]")) {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), realCommand.substring(9));
-                return;
-            }
-            if (realCommand.startsWith("[player]")) {
-                Bukkit.dispatchCommand(player, realCommand.substring(8));
-                return;
-            }
-
-        });
     }
 
     public static List<PlayerPlotBlock> getSpecialBlockFromTownBlock(Town town, boolean needsPublic) {
@@ -218,17 +186,6 @@ public class ProductUtils {
             }
         }
         return plotBlocks;
-    }
-
-    public static PlayerPlotBlock getSpecialBlockPlayerLoc(Player player){
-        TownyAPI townyAPI = TownyAPI.getInstance();
-        Location location = player.getLocation();
-        TownBlock townBlock = townyAPI.getTownBlock(location);
-        if(townBlock == null){
-            return null;
-        }
-        PlayerPlotBlock plotBlock = findSpecialTownBlock(townBlock.getTypeName());
-        return plotBlock;
     }
 
     public static void addSbData(BaseBlock block, Town town, TownBlock townBlock){
@@ -278,14 +235,6 @@ public class ProductUtils {
         return block;
     }
 
-    public static List<String> formatBlockCommands(PrivateTownBlock privateTownBlock, LostResourceData lost) {
-        List<String> gainCommand = privateTownBlock.getGainCommand();
-        if(lost == null){
-            return gainCommand;
-        }
-
-        return null;
-    }
 
     public static List<BaseBlock> findSbFromTownBlocks(Town town, Player player) {
         // 如果在中立城镇
@@ -297,7 +246,6 @@ public class ProductUtils {
                 break;
             }
         }
-
         List<BaseBlock> baseBlocks = new ArrayList<>();
 
         if(onlyNeedNeutral){
