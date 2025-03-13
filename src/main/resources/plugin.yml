@@ -30,3 +30,6 @@ permissions:
       default: op
     steal:
       default: false
+    war.open:
+      default: false
+

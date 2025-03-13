@@ -3,6 +3,8 @@ package org.nott.model;
 import lombok.Data;
 import org.nott.SimpleTownyProduct;
 import org.nott.exception.VersionNotCorrectException;
+import org.nott.model.activity.GroupWar;
+import org.nott.model.activity.SneakAttack;
 import org.nott.model.block.SpecialTownBlock;
 import org.nott.utils.FileUtils;
 
@@ -52,6 +54,10 @@ public class Configuration {
     private Integer plunderGainTimes;
 
     private SpecialTownBlock blockTypes;
+
+    private GroupWar groupWar;
+
+    private SneakAttack sneakAttack;
 
     public void load() throws Exception {
         SimpleTownyProduct.logger.info("Loading configuration...");

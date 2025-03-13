@@ -1,0 +1,11 @@
+- uuid: 'war-01'
+  start_time: 123
+  end_time: 123
+  attack_town_name: '攻击'
+  defend_town_name: '防守'
+  war_points: 123
+  attackers:
+    -
+  defenders:
+    -
+  cool_down: 213

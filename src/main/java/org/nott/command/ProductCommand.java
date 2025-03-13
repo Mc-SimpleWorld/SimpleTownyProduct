@@ -22,10 +22,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.nott.SimpleTownyProduct;
 import org.nott.event.PrePlotStealEvent;
+import org.nott.event.WarRecuitEvent;
 import org.nott.exception.ConfigWrongException;
 import org.nott.exception.ProductException;
 import org.nott.model.Configuration;
 import org.nott.model.Message;
+import org.nott.model.activity.GroupWar;
 import org.nott.model.block.PlayerPlotBlock;
 import org.nott.model.abstracts.BaseBlock;
 import org.nott.model.block.PrivateTownBlock;
@@ -33,10 +35,7 @@ import org.nott.model.data.*;
 import org.nott.time.TimePeriod;
 import org.nott.time.Timer;
 import org.nott.time.TimerHandler;
-import org.nott.utils.CommonUtils;
-import org.nott.utils.Messages;
-import org.nott.utils.PermissionUtils;
-import org.nott.utils.ProductUtils;
+import org.nott.utils.*;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -78,8 +77,48 @@ public class ProductCommand implements TabExecutor {
             case "steal":
                 parseStealCommand(commandSender, subArgs);
                 break;
+            case "war":
+                parseWarCommand(commandSender);
+                break;
         }
         return true;
+    }
+
+    private void parseWarCommand(CommandSender commandSender) {
+        Player player = (Player) commandSender;
+        SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
+        Configuration configuration = instance.getConfiguration();
+        TownyAPI townyAPI = TownyAPI.getInstance();
+        Message message = instance.getMessage();
+        try {
+            GroupWar groupWar = configuration.getGroupWar();
+            if(!groupWar.isEnable()){
+                return;
+            }
+            PlayerPlotBlock plotBlock = ProductUtils.findSpecialFromLocation(player);
+            if (!PermissionUtils.hasPermission(player, "towny.product.war.open")) {
+                throw new ProductException(message.getCommonNoPermission());
+            }
+            if(plotBlock == null || plotBlock.isPublic()){
+                throw new ProductException("玩家所在地非私有资源区块");
+            }
+            if(!TownyUtils.hasTown(player)){
+                throw new ProductException(message.getNotInTown());
+            }
+            Integer minAttackers = groupWar.getMinAttackers();
+            int onlineResident = 0;
+            Town town = townyAPI.getTown(player);
+            for (Resident resident : town.getResidents()) {
+                boolean online = resident.isOnline();
+                if(online) onlineResident++;
+            }
+            if(minAttackers > onlineResident){
+                throw new ProductException("在线人数没有达到最少进攻人数:" + minAttackers);
+            }
+            BukkitTools.fireEvent(new WarRecuitEvent(player, town, plotBlock));
+        } catch (Exception e) {
+            Messages.sendError(commandSender, e.getMessage());
+        }
     }
 
     private void parseHelpCommand(CommandSender commandSender) {

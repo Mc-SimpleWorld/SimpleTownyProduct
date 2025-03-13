@@ -13,6 +13,12 @@ import org.bukkit.entity.Player;
  */
 public class TownyUtils {
 
+    public static boolean hasTown(Player player){
+        TownyAPI townyAPI = TownyAPI.getInstance();
+        Town town = townyAPI.getTown(player);
+        return town != null;
+    }
+
     public static boolean whetherInTown(Player player){
         return whetherInTown(player, false);
     }

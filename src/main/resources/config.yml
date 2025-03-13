@@ -155,13 +155,14 @@ group_war:
   war_end_time: 22:00
   # 争夺持续时间（秒）
   war_duration: 15min
-  war_max_session_per_town: 3
+  war_session_per_town: 3
   # 争夺积分设置
   kill_points: 10 # 每击杀1名玩家
   capture_points: 5 # 每秒占领据点
   capture_time: 3min
   capture_range: 6
 
+  recruit_duration: 30min
   # 人数限制
   min_attackers: 5 # 进攻方最低人数
   max_attackers_multiplier: 1.5 # 进攻方人数上限为防守方的1.5倍
@@ -187,7 +188,7 @@ sneak_attack:
   # 偷袭成本
   cost: 1000 # 发起偷袭需要的金币
   # 偷袭失败惩罚
-  cooldown: 1week # 失败后1周内无法再发起争夺或偷袭
+  cool_down: 1week # 失败后1周内无法再发起争夺或偷袭
   fail_cost: 1000 # 失败后需要支付的金币
 
 
