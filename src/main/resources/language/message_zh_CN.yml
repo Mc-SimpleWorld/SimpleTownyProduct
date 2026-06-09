@@ -75,5 +75,23 @@ command_admin_help:
   - "/ta product set block public {playerName} {block} {period}: 设置玩家在公共区块的收获冷却"
   - "/ta product set steal {playerName} {period}: 设置玩家发起盗窃的冷却"
 
+tab_help: "help"
+tab_info: "info"
+tab_gain: "gain"
+tab_steal: "steal"
+tab_con: "con"
+tab_continue: "continue"
+tab_reload: "reload"
+tab_admin: "admin"
+tab_set: "set"
+tab_s: "s"
+tab_block: "block"
+tab_private: "private"
+tab_public: "public"
+tab_player_name: "<玩家名>"
+tab_town_name: "<城镇名>"
+tab_block_name: "<区块名>"
+tab_seconds: "<秒数>"
+
 
 

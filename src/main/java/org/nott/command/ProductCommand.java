@@ -49,9 +49,26 @@ import java.util.stream.Collectors;
  */
 public class ProductCommand implements TabExecutor {
 
-    List<String> userCommands = List.of("help", "info", "steal", "gain", "con", "continue");
+    private Message getMessage() {
+        return SimpleTownyProduct.INSTANCE.getMessage();
+    }
 
-    List<String> adminCommands = List.of("help", "info", "steal", "gain", "reload", "admin", "con", "continue");
+    private List<String> getUserCommands() {
+        Message msg = getMessage();
+        return List.of(msg.getTabHelp(), msg.getTabInfo(), msg.getTabSteal(), msg.getTabGain(), msg.getTabCon(),
+                msg.getTabContinue());
+    }
+
+    private List<String> getAdminCommands() {
+        Message msg = getMessage();
+        return List.of(msg.getTabHelp(), msg.getTabInfo(), msg.getTabSteal(), msg.getTabGain(), msg.getTabReload(),
+                msg.getTabAdmin(), msg.getTabCon(), msg.getTabContinue());
+    }
+
+    private List<String> getTabCommands() {
+        Message msg = getMessage();
+        return List.of(msg.getTabReload(), msg.getTabSet());
+    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label,
@@ -309,18 +326,34 @@ public class ProductCommand implements TabExecutor {
     public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command,
             @NotNull String label, @NotNull String[] args) {
         boolean isAdmin = PermissionUtils.hasPermission((Player) commandSender, "towny.product.admin");
+        Message msg = getMessage();
         if (args.length == 1) {
-            return isAdmin ? adminCommands : userCommands;
+            return isAdmin ? getAdminCommands() : getUserCommands();
         }
+        String firstArg = args[0].toLowerCase();
         if (args.length == 2) {
-            String arg = args[1];
-            switch (arg) {
-                case "admin": {
-                    if (!isAdmin)
-                        return null;
-
-                }
+            String admin = msg.getTabAdmin().toLowerCase();
+            String steal = msg.getTabSteal().toLowerCase();
+            String s = msg.getTabS().toLowerCase();
+            String con = msg.getTabCon().toLowerCase();
+            String cont = msg.getTabContinue().toLowerCase();
+            if (firstArg.equals(admin)) {
+                if (!isAdmin)
+                    return null;
+                return getTabCommands();
             }
+            if (firstArg.equals(steal) || firstArg.equals(s)) {
+                return List.of(msg.getTabTownName());
+            }
+            if (firstArg.equals(con) || firstArg.equals(cont)) {
+                return List.of();
+            }
+            return null;
+        }
+        String steal = msg.getTabSteal().toLowerCase();
+        String s = msg.getTabS().toLowerCase();
+        if (args.length == 3 && (firstArg.equals(steal) || firstArg.equals(s))) {
+            return List.of(msg.getTabBlockName());
         }
         return null;
     }

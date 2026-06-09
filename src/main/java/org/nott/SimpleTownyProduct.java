@@ -213,14 +213,17 @@ public final class SimpleTownyProduct extends JavaPlugin {
     }
 
     private void registerTownySubCommand() {
-        // Register Product command
-//        TownyCommandAddonAPI.addSubCommand(TownyCommandAddonAPI.CommandType.TOWN, "product", new ProductCommand());
-        AddonCommand myCommand = new AddonCommand(TownyCommandAddonAPI.CommandType.TOWN, "product", new ProductCommand());
-        // TODO fix tab complete
-        myCommand.setTabCompletion(0, Arrays.asList("product"));
-        myCommand.setTabCompletion(1, Arrays.asList("gain", "info", "trade"));
-        TownyCommandAddonAPI.addSubCommand(myCommand);
-        TownyCommandAddonAPI.addSubCommand(TownyCommandAddonAPI.CommandType.TOWNYADMIN, "product", new ProductAdminCommand());
+        AddonCommand townProductCommand = new AddonCommand(TownyCommandAddonAPI.CommandType.TOWN, "product", new ProductCommand());
+        townProductCommand.setTabCompletion(0, Arrays.asList("product"));
+        townProductCommand.setTabCompletion(1, Arrays.asList("help", "info", "steal", "gain", "con", "continue"));
+        TownyCommandAddonAPI.addSubCommand(townProductCommand);
+
+        AddonCommand adminProductCommand = new AddonCommand(TownyCommandAddonAPI.CommandType.TOWNYADMIN, "product", new ProductAdminCommand());
+        adminProductCommand.setTabCompletion(0, Arrays.asList("product"));
+        adminProductCommand.setTabCompletion(1, Arrays.asList("reload", "set", "s"));
+        adminProductCommand.setTabCompletion(2, Arrays.asList("block", "steal"));
+        adminProductCommand.setTabCompletion(3, Arrays.asList("private", "public"));
+        TownyCommandAddonAPI.addSubCommand(adminProductCommand);
     }
 
     private void registerServices() {

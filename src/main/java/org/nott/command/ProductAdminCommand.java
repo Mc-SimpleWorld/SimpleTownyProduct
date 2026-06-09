@@ -33,8 +33,19 @@ import java.util.List;
  */
 public class ProductAdminCommand implements TabExecutor {
 
-    List<String> tabCommands = Arrays.asList("reload", "set", "s");
-    List<String> tabSecCommands = Arrays.asList("block", "steal");
+    private Message getMessage() {
+        return SimpleTownyProduct.INSTANCE.getMessage();
+    }
+
+    private List<String> getTabCommands() {
+        Message msg = getMessage();
+        return List.of(msg.getTabReload(), msg.getTabSet(), msg.getTabS());
+    }
+
+    private List<String> getTabSecCommands() {
+        Message msg = getMessage();
+        return List.of(msg.getTabBlock(), msg.getTabSteal());
+    }
 
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
@@ -166,13 +177,79 @@ public class ProductAdminCommand implements TabExecutor {
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if(PermissionUtils.hasPermission(commandSender, "towny.product.admin")){
-            if(args.length == 1){
-                return tabCommands;
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command,
+            @NotNull String label, @NotNull String[] args) {
+        if (!PermissionUtils.hasPermission(commandSender, "towny.product.admin")) {
+            return null;
+        }
+        Message msg = getMessage();
+        if (args.length == 1) {
+            return getTabCommands();
+        }
+        String firstArg = args[0].toLowerCase();
+        String set = msg.getTabSet().toLowerCase();
+        String s = msg.getTabS().toLowerCase();
+        String reload = msg.getTabReload().toLowerCase();
+        if (args.length == 2) {
+            if (firstArg.equals(set) || firstArg.equals(s)) {
+                return getTabSecCommands();
             }
-            if(args.length == 2){
-                return tabSecCommands;
+            if (firstArg.equals(reload)) {
+                return List.of();
+            }
+            return null;
+        }
+        if (args.length == 3 && (firstArg.equals(set) || firstArg.equals(s))) {
+            String secondArg = args[1].toLowerCase();
+            String block = msg.getTabBlock().toLowerCase();
+            String steal = msg.getTabSteal().toLowerCase();
+            if (secondArg.equals(block)) {
+                return List.of(msg.getTabPrivate(), msg.getTabPublic());
+            }
+            if (secondArg.equals(steal)) {
+                return List.of(msg.getTabPlayerName());
+            }
+            return null;
+        }
+        if (args.length == 4 && (firstArg.equals(set) || firstArg.equals(s))) {
+            String secondArg = args[1].toLowerCase();
+            String thirdArg = args[2].toLowerCase();
+            String block = msg.getTabBlock().toLowerCase();
+            String steal = msg.getTabSteal().toLowerCase();
+            String priv = msg.getTabPrivate().toLowerCase();
+            String pub = msg.getTabPublic().toLowerCase();
+            if (secondArg.equals(block)) {
+                if (thirdArg.equals(priv)) {
+                    return List.of(msg.getTabTownName());
+                } else if (thirdArg.equals(pub)) {
+                    return List.of(msg.getTabPlayerName());
+                }
+            } else if (secondArg.equals(steal)) {
+                return List.of(msg.getTabSeconds());
+            }
+        }
+        if (args.length == 5 && (firstArg.equals(set) || firstArg.equals(s))) {
+            String secondArg = args[1].toLowerCase();
+            String thirdArg = args[2].toLowerCase();
+            String block = msg.getTabBlock().toLowerCase();
+            String priv = msg.getTabPrivate().toLowerCase();
+            String pub = msg.getTabPublic().toLowerCase();
+            if (secondArg.equals(block)) {
+                if (thirdArg.equals(priv) || thirdArg.equals(pub)) {
+                    return List.of(msg.getTabBlockName());
+                }
+            }
+        }
+        if (args.length == 6 && (firstArg.equals(set) || firstArg.equals(s))) {
+            String secondArg = args[1].toLowerCase();
+            String thirdArg = args[2].toLowerCase();
+            String block = msg.getTabBlock().toLowerCase();
+            String priv = msg.getTabPrivate().toLowerCase();
+            String pub = msg.getTabPublic().toLowerCase();
+            if (secondArg.equals(block)) {
+                if (thirdArg.equals(priv) || thirdArg.equals(pub)) {
+                    return List.of(msg.getTabSeconds());
+                }
             }
         }
         return null;

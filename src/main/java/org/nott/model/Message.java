@@ -154,6 +154,40 @@ public class Message {
 
     private List<String> commandAdminHelp;
 
+    private String tabHelp;
+
+    private String tabInfo;
+
+    private String tabGain;
+
+    private String tabSteal;
+
+    private String tabCon;
+
+    private String tabContinue;
+
+    private String tabReload;
+
+    private String tabAdmin;
+
+    private String tabSet;
+
+    private String tabS;
+
+    private String tabBlock;
+
+    private String tabPrivate;
+
+    private String tabPublic;
+
+    private String tabPlayerName;
+
+    private String tabTownName;
+
+    private String tabBlockName;
+
+    private String tabSeconds;
+
     public void load() throws Exception {
         SimpleTownyProduct.logger.info("Loading messages...");
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;

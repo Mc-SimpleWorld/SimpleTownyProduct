@@ -75,5 +75,23 @@ command_admin_help:
   - "/ta product set block public {playerName} {block} {period}: Set public block for player gain cool-down."
   - "/ta product set steal {playerName} {period}: Set player start steal activity cool-down."
 
+tab_help: "help"
+tab_info: "info"
+tab_gain: "gain"
+tab_steal: "steal"
+tab_con: "con"
+tab_continue: "continue"
+tab_reload: "reload"
+tab_admin: "admin"
+tab_set: "set"
+tab_s: "s"
+tab_block: "block"
+tab_private: "private"
+tab_public: "public"
+tab_player_name: "<player_name>"
+tab_town_name: "<town_name>"
+tab_block_name: "<block_name>"
+tab_seconds: "<seconds>"
+
 
 
