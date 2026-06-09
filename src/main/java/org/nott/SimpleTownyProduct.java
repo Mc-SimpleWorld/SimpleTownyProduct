@@ -98,7 +98,8 @@ public final class SimpleTownyProduct extends JavaPlugin {
             this.saveResource("data/steal-activity.txt", false);
             String coolDownFilePath = this.getDataFolder() + File.separator + "data" + File.separator + "cooldown.txt";
             String stolenFilePath = this.getDataFolder() + File.separator + "data" + File.separator + "stolen.txt";
-            String stealActivityPath = this.getDataFolder() + File.separator + "data" + File.separator + "steal-activity.txt";
+            String stealActivityPath = this.getDataFolder() + File.separator + "data" + File.separator
+                    + "steal-activity.txt";
             File coolDownFile = new File(coolDownFilePath);
             File stolenFile = new File(stolenFilePath);
             File stealActivityFile = new File(stealActivityPath);
@@ -165,14 +166,34 @@ public final class SimpleTownyProduct extends JavaPlugin {
                             Map<String, String> value = FileUtils.readByKeyValue(stealActivityFile);
                             for (String key : value.keySet()) {
                                 String activityJson = value.get(key);
-                                Timer.runningStealActivity.put(key, new Gson().fromJson(activityJson, StealActivity.class));
+                                Timer.runningStealActivity.put(key,
+                                        new Gson().fromJson(activityJson, StealActivity.class));
                             }
                         }
                     }))
                     .build();
             logger.info("DataHandle Register success, type : [%s]".formatted(storageType));
+        } else if (storageType.equalsIgnoreCase(DbTypeEnum.SQLITE.name())) {
+            String databasePath = this.getDataFolder() + File.separator + "data" + File.separator + "towny_product.db";
+            new File(this.getDataFolder() + File.separator + "data").mkdirs();
+            org.nott.data.sqlite.SQLiteHandlerRegistrar sqliteRegistrar = org.nott.data.sqlite.SQLiteHandlerRegistrar
+                    .Builder()
+                    .setDatabasePath(databasePath)
+                    .register(
+                            org.nott.data.sqlite.SQLiteDataHandler.build(new org.nott.data.sqlite.CoolDownDataSource()))
+                    .register(org.nott.data.sqlite.SQLiteDataHandler.build(new org.nott.data.sqlite.StolenDataSource()))
+                    .register(org.nott.data.sqlite.SQLiteDataHandler
+                            .build(new org.nott.data.sqlite.StealActivityDataSource()))
+                    .build();
+            this.dataHandlerRegistrar = new DataHandlerRegistrar() {
+                @Override
+                public void end() {
+                    sqliteRegistrar.end();
+                }
+            };
+            logger.info("SQLite DataHandle Register success, type : [%s]".formatted(storageType));
         } else {
-            throw new IllegalArgumentException("Not Support Other Storage Type except 'File'.");
+            throw new IllegalArgumentException("Not Support Other Storage Type except 'File' and 'SQLite'.");
         }
     }
 
@@ -200,6 +221,7 @@ public final class SimpleTownyProduct extends JavaPlugin {
             public String getMapKey() {
                 return block.getMapKey(); // A single character to be shown on the /towny map and /towny map hud
             }
+
             @Override
             public double getCost() {
                 return block.getBasePrice();// A cost that will be paid to set the plot type.
@@ -213,12 +235,14 @@ public final class SimpleTownyProduct extends JavaPlugin {
     }
 
     private void registerTownySubCommand() {
-        AddonCommand townProductCommand = new AddonCommand(TownyCommandAddonAPI.CommandType.TOWN, "product", new ProductCommand());
+        AddonCommand townProductCommand = new AddonCommand(TownyCommandAddonAPI.CommandType.TOWN, "product",
+                new ProductCommand());
         townProductCommand.setTabCompletion(0, Arrays.asList("product"));
         townProductCommand.setTabCompletion(1, Arrays.asList("help", "info", "steal", "gain", "con", "continue"));
         TownyCommandAddonAPI.addSubCommand(townProductCommand);
 
-        AddonCommand adminProductCommand = new AddonCommand(TownyCommandAddonAPI.CommandType.TOWNYADMIN, "product", new ProductAdminCommand());
+        AddonCommand adminProductCommand = new AddonCommand(TownyCommandAddonAPI.CommandType.TOWNYADMIN, "product",
+                new ProductAdminCommand());
         adminProductCommand.setTabCompletion(0, Arrays.asList("product"));
         adminProductCommand.setTabCompletion(1, Arrays.asList("reload", "set", "s"));
         adminProductCommand.setTabCompletion(2, Arrays.asList("block", "steal"));
@@ -231,7 +255,7 @@ public final class SimpleTownyProduct extends JavaPlugin {
         MESSAGE_API = BukkitAudiences.create(this);
         SCHEDULER = this.getServer().getScheduler();
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if(rsp == null){
+        if (rsp == null) {
             logger.severe("No economy plugin found. Disabling plugin.");
             getServer().getPluginManager().disablePlugin(this);
             return;
@@ -259,7 +283,7 @@ public final class SimpleTownyProduct extends JavaPlugin {
     public void onDisable() {
         // Plugin shutdown logic
         // 数据持久化
-        if(this.dataHandlerRegistrar != null){
+        if (this.dataHandlerRegistrar != null) {
             this.dataHandlerRegistrar.end();
         }
         for (BukkitTask task : tasks) {

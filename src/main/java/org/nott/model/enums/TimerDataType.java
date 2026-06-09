@@ -4,7 +4,7 @@ public enum TimerDataType {
 
     COOL_DOWN(),
     LOST_PRODUCT(),
-    STEAL_ACTIVITY()
+    STEAL_ACTIVITY();
 
     Class aClass;
 
