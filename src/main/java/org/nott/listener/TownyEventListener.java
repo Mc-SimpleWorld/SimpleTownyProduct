@@ -40,7 +40,7 @@ public class TownyEventListener implements Listener {
         String name = newType.getName();
         Resident resident = event.getResident();
         Town town = resident.getTown();
-        List<String> alreadyHasTypes = town.getTownBlocks().stream().map(townBlock -> townBlock.getType().getName()).distinct().collect(Collectors.toList());
+        List<String> alreadyHasTypes = town.getTownBlocks().stream().map(townBlock -> townBlock.getType().getName()).distinct().toList();
         PlayerPlotBlock targetBlockType = ProductUtils.findSpecialTownBlock(name);
         if(targetBlockType == null){
             return;

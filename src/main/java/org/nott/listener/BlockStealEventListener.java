@@ -33,6 +33,7 @@ import org.nott.model.abstracts.BaseBlock;
 import org.nott.time.TimePeriod;
 import org.nott.time.Timer;
 import org.nott.utils.Messages;
+import org.nott.utils.PermissionUtils;
 import org.nott.utils.ProductUtils;
 
 import java.time.Duration;
@@ -49,6 +50,7 @@ public class BlockStealEventListener implements Listener {
         boolean stealWholeTownBlock = prePlotStealEvent.isStealWholeTownBlock();
         Player player = prePlotStealEvent.getThief();
         Town town = prePlotStealEvent.getTargetTown();
+        boolean pvp = town.isPVP();
         Message message = SimpleTownyProduct.INSTANCE.getMessage();
         Confirmation.runOnAcceptAsync(() -> BukkitTools.fireEvent(new PlotBeStealEvent(prePlotStealEvent.getBlocks(), town, player, stealWholeTownBlock)))
                 .setTitle(stealWholeTownBlock ? message.getConfirmToStealTown() : message.getConfirmToSteal())
@@ -57,6 +59,9 @@ public class BlockStealEventListener implements Listener {
                 .runOnCancel(() -> {
                     Messages.sendError(player, message.getGiveUpSteal());
                     prePlotStealEvent.setCancelled(true);
+                    if(!pvp){
+                        town.setPVP(false);
+                    }
                 })
                 .sendTo(player);
     }
@@ -75,7 +80,10 @@ public class BlockStealEventListener implements Listener {
         // 添加偷窃冷却
          ProductUtils.addCoolDown(Timer.STEAL_KEY + player.getUniqueId(), TimePeriod.fromStringGetVal(configuration.getStealCoolDown()));
         // 若小偷在偷取中PVP死亡，将会被送入监狱并取消偷窃事件
-        town.setPVP(true);
+        boolean pvp = town.isPVP();
+        if(!pvp){
+            town.setPVP(true);
+        }
         SimpleTownyProduct.SCHEDULER.runTaskAsynchronously(instance, () -> {
             long second = val / 1000;
             long start = System.currentTimeMillis();
@@ -136,7 +144,12 @@ public class BlockStealEventListener implements Listener {
                 }
             }
         });
-        SimpleTownyProduct.SCHEDULER.runTaskLater(instance, activity::finish, val / 1000 * 20 + 20);
+        SimpleTownyProduct.SCHEDULER.runTaskLater(instance, () -> {
+            if(!pvp){
+                town.setPVP(false);
+            }
+            activity.finish();
+        }, val / 1000 * 20 + 20);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -160,7 +173,14 @@ public class BlockStealEventListener implements Listener {
         Long lost = event.getLost();
         Town town = event.getTown();
         BaseBlock block = event.getBlock();
-        // TODO 发送给拥有gain权限的人
+        // 发送给拥有gain权限的人
+        List<Resident> residents = town.getResidents();
+        for (Resident resident : residents) {
+            if (resident.isOnline() && PermissionUtils.hasPermission(resident.getPlayer(), "towny.product.gain")) {
+                Messages.send(resident.getPlayer(), instance.getMessage().getBeStolenWarning()
+                        .formatted(town.getName(), block.getName(), thiefName, lost));
+            }
+        }
         // 现在发给在线的市长
         Resident mayor = town.getMayor();
         if (mayor.isOnline()) {
@@ -173,22 +193,43 @@ public class BlockStealEventListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onStealingPlayPvPDeathEventListener(PlayerDeathEvent event) {
-        EntityDamageEvent entityDamageEvent = event.getEntity().getLastDamageCause();
-//        Entity entity = entityDamageEvent.getDamageSource().getCausingEntity();
         Player player = event.getPlayer();
-        if (Timer.runningStealActivity.containsKey(player.getUniqueId().toString())) {
-            StealActivity activity = Timer.runningStealActivity.get(player.getUniqueId().toString());
+        String playUUID = player.getUniqueId().toString();
+        boolean isCurrentStealAct = Timer.runningStealActivity.containsKey(playUUID);
+        if(!isCurrentStealAct){
+            return;
+        }
+        SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
+        Configuration configuration = instance.getConfiguration();
+        boolean thiefKilledEnd = configuration.isThiefKilledEnd();
+        if(!thiefKilledEnd){
+            return;
+        }
+        Integer i = Timer.deathTimes.getOrDefault(playUUID, 0);
+        i++;
+        boolean isOver = i >=  configuration.getThiefKilledEndCount();
+        if(isOver){
+            Timer.deathTimes.remove(playUUID);
+            StealActivity activity = Timer.runningStealActivity.get(playUUID);
             activity.setInterruptReason(SimpleTownyProduct.INSTANCE.getMessage().getStealFailDeath());
             activity.setInterrupt(true);
             Town town = activity.getTargetTown();
             TownyAPI townyAPI = TownyAPI.getInstance();
             Resident resident = townyAPI.getResident(player);
             if (!town.hasJails()) {
+                Resident mayor = town.getMayor();
+                if(mayor.isOnline()){
+                    Messages.send(mayor.getPlayer(), SimpleTownyProduct.INSTANCE.getMessage().getTownNotHaveJailToLock());
+                }
+                Messages.sendError(player, SimpleTownyProduct.INSTANCE.getMessage().getTownNotHaveJailForThief());
                 return;
             }
             Jail jail = town.getJails().stream().findFirst().get();
             JailUtil.jailResident(resident, jail, 1, 8, JailReason.OUTLAW_DEATH, null);
+            Messages.sendError(player, SimpleTownyProduct.INSTANCE.getMessage().getThiefBeLockedByFail());
+        }else {
+            Timer.deathTimes.put(playUUID, i);
+            Messages.sendError(player, SimpleTownyProduct.INSTANCE.getMessage().getThiefDeathWarning().formatted(configuration.getThiefKilledEndCount() - i));
         }
-
     }
 }

@@ -62,16 +62,16 @@ public class ProductCommand implements TabExecutor {
             default:
                 parsePluginInfoCommand(commandSender);
                 break;
-            case "help":
+            case "help", "h":
                 parseHelpCommand(commandSender);
                 break;
-            case "info":
+            case "info", "i":
                 parseInfoCommand(commandSender, subArgs);
                 break;
-            case "gain":
+            case "gain", "g":
                 parseGainCommand(commandSender);
                 break;
-            case "steal":
+            case "steal", "s":
                 parseStealCommand(commandSender, subArgs);
                 break;
         }
@@ -218,6 +218,7 @@ public class ProductCommand implements TabExecutor {
         Town town = resident.getTownOrNull();
         if (town == null) {
             Messages.sendError(commandSender, message.getNotInTown());
+            return;
         }
         Collection<TownBlock> townBlocks = town.getTownBlocks();
         if (townBlocks == null || townBlocks.isEmpty()) {
@@ -257,7 +258,7 @@ public class ProductCommand implements TabExecutor {
             String stolenKey = ProductUtils.stolenKey(block, town);
             String storage = Timer.lostProductTownMap.containsKey(stolenKey) ?
                     (100 - configuration.getStealRate()) + "%" : 100 + "%";
-            String info = "%s--%s--%s--%s".formatted(name, isPublic, coolDownState, storage);
+            String info = "%s--%s--%s--%s--%s".formatted(name, isPublic, coolDownState, storage, block.getDescription());
             TextComponent component = Component.text(info).color(aPublic ? NamedTextColor.DARK_GREEN : NamedTextColor.GOLD);
             body.add(component);
         }

@@ -68,8 +68,13 @@ steal_cool_down: 5hour
 steal_need_in_block: true
 # 偷窃中可离开目标区块的秒数
 steal_temp_out_second: 5
-
-
+# 小偷被杀死后是否结束偷窃
+# if thief_killed_end is true, when the thief is killed, the stealing will end, and the steal times will be count by thief_killed_end_count
+thief_killed_end: true
+# 小偷被杀死后结束偷窃的次数，thief_killed_end为true时生效
+thief_killed_end_count: 1
+# 小偷偷窃失败的收监时间，单位hour
+thief_fail_locked_time: 8
 # Block types
 # 资源区块类型 公共：publics 私有：private
 block_types:
@@ -102,6 +107,7 @@ block_types:
       gain_cool_down: '1hour'
       # 交易冷却
       trade_cool_down: '1day'
+      description: '获取公共驿站资源'
       # 获取产出时实际执行的命令
       # [console] 以控制台身份执行
       # [player] 以玩家身份执行
@@ -125,8 +131,10 @@ block_types:
       trade_able: true
       gain_cool_down: '10hour'
       trade_cool_down: '1day'
+      description: '获取钢铁资源'
       gain_command:
-        - '[console]money grant %player_name% gun {{PRODUCT_NUMBER}}'
+        - '[console]money grant %player_name% 100'
+        - '[console]give %player_name% iron_ingot {{PRODUCT_NUMBER}}'
     - name: '魔法'
       map_key: 'm'
       limit_per_town: 1
@@ -140,8 +148,11 @@ block_types:
         - 'TNT'
       trade_able: true
       gain_cool_down: '10hour'
-      trade_cool_down: '1day'
+      trade_cool_down: '1day',
+      description: '获取魔法资源'
       gain_command:
+        - '[console]give %player_name% tnt {{PRODUCT_NUMBER}}'
+        - '[console]money grant %player_name% 100'
         - '[console]give %player_name% tnt {{PRODUCT_NUMBER}}'
 
 # TODO 随机增减益事件

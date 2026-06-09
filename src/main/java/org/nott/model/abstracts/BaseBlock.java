@@ -38,6 +38,8 @@ public abstract class BaseBlock {
 
     private String tradeCoolDown;
 
+    private String description;
+
     public void doGain(Player player) {
         // do something
         SimpleTownyProduct.logger.info("DoGain in Base");

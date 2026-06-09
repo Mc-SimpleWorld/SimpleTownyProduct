@@ -8,11 +8,23 @@ import org.bukkit.plugin.Plugin;
 import org.nott.SimpleTownyProduct;
 import org.nott.model.Message;
 
+import java.util.List;
+
 /**
  * @author Nott
  * @date 2025-2-28
  */
 public class PermissionUtils {
+
+    public static List<Player> returnWhoHasPermission(String permission) {
+        List<Player> playersWithPermission = new java.util.ArrayList<>();
+        for (Player player : SimpleTownyProduct.INSTANCE.getServer().getOnlinePlayers()) {
+            if (player.hasPermission(permission)) {
+                playersWithPermission.add(player);
+            }
+        }
+        return playersWithPermission;
+    }
 
     public static void grantPermission(Player player, Plugin plugin, String permission) {
         PermissionAttachment attachment = player.addAttachment(plugin);

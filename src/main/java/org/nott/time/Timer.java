@@ -41,6 +41,8 @@ public class Timer implements Comparable<Timer>{
 
     public static final Map<String, StealActivity> runningStealActivity = new ConcurrentHashMap<>();
 
+    public static final Map<String, Integer> deathTimes = new ConcurrentHashMap<>();
+
     public static final Map<Player, List<Component>> email = new ConcurrentHashMap<>();
 
     public static void run(){

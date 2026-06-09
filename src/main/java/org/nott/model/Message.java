@@ -138,6 +138,14 @@ public class Message {
 
     private String successSetBlockCoolForPlayer;
 
+    private String townNotHaveJailToLock;
+
+    private String townNotHaveJailForThief;
+
+    private String thiefBeLockedByFail;
+
+    private String thiefDeathWarning;
+
     private List<String> commandHelp;
 
     private List<String> commandAdminHelp;

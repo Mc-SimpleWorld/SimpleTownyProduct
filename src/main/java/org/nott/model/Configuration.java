@@ -56,6 +56,10 @@ public class Configuration {
 
     private SpecialTownBlock blockTypes;
 
+    private boolean thiefKilledEnd;
+
+    private Integer thiefKilledEndCount;
+
     public void load() throws Exception {
         SimpleTownyProduct.logger.info("Loading configuration...");
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;

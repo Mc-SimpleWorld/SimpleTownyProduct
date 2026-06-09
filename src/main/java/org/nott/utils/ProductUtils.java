@@ -163,7 +163,8 @@ public class ProductUtils {
         Configuration configuration = SimpleTownyProduct.INSTANCE.getConfiguration();
         SpecialTownBlock blockTypes = configuration.getBlockTypes();
         List<PrivateTownBlock> privates = blockTypes.getPrivates();
-        List<PlayerPlotBlock> plotBlockList = privates.stream().filter(sb -> townBlocks.stream().anyMatch(tb -> tb.getTypeName().equals(sb.getName())))
+        List<PlayerPlotBlock> plotBlockList = privates.stream()
+                .filter(sb -> townBlocks.stream().anyMatch(tb -> tb.getTypeName().equals(sb.getName())))
                 .map(sb -> new PlayerPlotBlock(false, sb)).toList();
         List<PlayerPlotBlock> list = new ArrayList<>(plotBlockList);
         if(needsPublic){
