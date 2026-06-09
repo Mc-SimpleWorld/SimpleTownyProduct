@@ -118,6 +118,10 @@ public class Message {
 
     private String stealInterruptForOut;
 
+    private String stealInterruptForPauseTimeout;
+
+    private String stealPauseWarning;
+
     private String stealFailTitle;
 
     private String stealSuccessTitle;
@@ -150,18 +154,19 @@ public class Message {
 
     private List<String> commandAdminHelp;
 
-
     public void load() throws Exception {
         SimpleTownyProduct.logger.info("Loading messages...");
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
         Configuration configuration = instance.getConfiguration();
         String locale = configuration.getLocale();
-        File file = new File(instance.getDataFolder() + File.separator + "language" + File.separator + "message_" + locale + ".yml");
+        File file = new File(
+                instance.getDataFolder() + File.separator + "language" + File.separator + "message_" + locale + ".yml");
         Message message;
         if (file.exists()) {
             message = FileUtils.loadYamlFile(file.getPath(), Message.class);
         } else {
-            file = new File(instance.getDataFolder() + File.separator + "language" + File.separator + "message_en_US.yml");
+            file = new File(
+                    instance.getDataFolder() + File.separator + "language" + File.separator + "message_en_US.yml");
             if (file.exists()) {
                 message = FileUtils.loadYamlFile(file.getPath(), Message.class);
             } else {

@@ -72,7 +72,7 @@ steal_temp_out_second: 5
 # if thief_killed_end is true, when the thief is killed, the stealing will end, and the steal times will be count by thief_killed_end_count
 thief_killed_end: true
 # 小偷被杀死后结束偷窃的次数，thief_killed_end为true时生效
-thief_killed_end_count: 1
+thief_killed_end_count: 3
 # 小偷偷窃失败的收监时间，单位hour
 thief_fail_locked_time: 8
 # Block types

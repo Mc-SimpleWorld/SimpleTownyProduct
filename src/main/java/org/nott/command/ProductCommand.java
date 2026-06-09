@@ -27,6 +27,7 @@ import org.nott.exception.ConfigWrongException;
 import org.nott.model.Configuration;
 import org.nott.model.Message;
 import org.nott.model.PlayerPlotBlock;
+import org.nott.model.StealActivity;
 import org.nott.model.abstracts.BaseBlock;
 import org.nott.model.enums.BlockType;
 import org.nott.time.TimePeriod;
@@ -48,12 +49,13 @@ import java.util.stream.Collectors;
  */
 public class ProductCommand implements TabExecutor {
 
-    List<String> userCommands = List.of("help", "info", "steal", "gain");
+    List<String> userCommands = List.of("help", "info", "steal", "gain", "con", "continue");
 
-    List<String> adminCommands = List.of("help", "info", "steal", "gain", "reload", "admin");
+    List<String> adminCommands = List.of("help", "info", "steal", "gain", "reload", "admin", "con", "continue");
 
     @Override
-    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label,
+            @NotNull String[] args) {
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
         instance.getLogger().info("Product command executed.");
         String execute = args.length > 0 ? args[0] : "";
@@ -73,6 +75,9 @@ public class ProductCommand implements TabExecutor {
                 break;
             case "steal", "s":
                 parseStealCommand(commandSender, subArgs);
+                break;
+            case "con", "continue":
+                parseContinueStealCommand(commandSender);
                 break;
         }
         return true;
@@ -97,10 +102,8 @@ public class ProductCommand implements TabExecutor {
         Messages.sendMessages(commandSender, Messages.buildProductScreen(texts));
     }
 
-
-
     private void parseStealCommand(CommandSender commandSender, String[] args) {
-        //  使用权限管理
+        // 使用权限管理
         Player player = (Player) commandSender;
         PermissionUtils.checkPermission(player, "towny.product.steal");
         Location location = player.getLocation();
@@ -111,7 +114,7 @@ public class ProductCommand implements TabExecutor {
         Town town = townyAPI.getTown(location);
         Message message = SimpleTownyProduct.INSTANCE.getMessage();
         boolean beJailed = JailUtil.isQueuedToBeJailed(resident);
-        if(beJailed){
+        if (beJailed) {
             Messages.sendError(commandSender, message.getStealStillJailed());
             return;
         }
@@ -179,6 +182,42 @@ public class ProductCommand implements TabExecutor {
         BukkitTools.fireEvent(event);
     }
 
+    private void parseContinueStealCommand(CommandSender commandSender) {
+        Player player = (Player) commandSender;
+        String playerUUID = player.getUniqueId().toString();
+        StealActivity activity = Timer.runningStealActivity.get(playerUUID);
+        Message message = SimpleTownyProduct.INSTANCE.getMessage();
+        if (activity == null) {
+            Messages.sendError(commandSender, message.getNoSpecialBlock());
+            return;
+        }
+        if (!activity.isPause()) {
+            Messages.sendError(commandSender, message.getWaitForNextSteal());
+            return;
+        }
+        TownyAPI townyAPI = TownyAPI.getInstance();
+        Location location = player.getLocation();
+        Town currentTown = townyAPI.getTown(location);
+        if (currentTown == null || !currentTown.equals(activity.getTargetTown())) {
+            Messages.sendError(commandSender, message.getMustStandInTown());
+            return;
+        }
+        if (!activity.isInTown()) {
+            TownBlock townBlock = townyAPI.getTownBlock(location);
+            if (townBlock == null) {
+                Messages.sendError(commandSender, message.getMustStandInBlock());
+                return;
+            }
+            BaseBlock baseBlock = activity.getBlocks().get(0);
+            if (!baseBlock.getName().equals(townBlock.getTypeName())) {
+                Messages.sendError(commandSender, message.getMustStandInBlock());
+                return;
+            }
+        }
+        activity.resume();
+        Messages.send(commandSender, message.getStealSuccessTitle());
+    }
+
     private void parseGainCommand(CommandSender commandSender) {
         Player player = (Player) commandSender;
         Resident resident = TownyAPI.getInstance().getResident(player);
@@ -233,11 +272,10 @@ public class ProductCommand implements TabExecutor {
         body.add(Component.text(message.getClickToGain())
                 .hoverEvent(HoverEvent.showText(Component.text(message.getGainCommandHover())))
                 .color(NamedTextColor.GOLD)
-                .clickEvent(ClickEvent.runCommand("/t product gain"))
-        );
+                .clickEvent(ClickEvent.runCommand("/t product gain")));
         body.add(Messages.blankLine());
         body.add(Component.text("%s--%s--%s--%s".formatted(message.getSpecialBlock(),
-                        message.getSpecialType(), message.getWhetherCoolDown(), message.getProductStorage()))
+                message.getSpecialType(), message.getWhetherCoolDown(), message.getProductStorage()))
                 .color(TextColor.fromHexString("#38d415")));
         body.add(Messages.blankLine());
         for (PlayerPlotBlock haveBlock : haveBlocks) {
@@ -245,37 +283,41 @@ public class ProductCommand implements TabExecutor {
             boolean aPublic = haveBlock.isPublic();
             String name = block.getName();
             String isPublic = aPublic ? message.getPublicType() : message.getPrivateType();
-            String timerKey = aPublic ? ProductUtils.playerKey(player) :
-                    ProductUtils.blockKey(block, town);
+            String timerKey = aPublic ? ProductUtils.playerKey(player) : ProductUtils.blockKey(block, town);
             boolean isCoolDown = ProductUtils.isInCoolDown(timerKey);
             String coolDownState;
-            if(isCoolDown){
+            if (isCoolDown) {
                 Long coolDown = ProductUtils.getCoolDown(timerKey);
                 coolDownState = message.getCoolDown().formatted(coolDown / 1000 / 60);
-            }else {
+            } else {
                 coolDownState = message.getUnCoolDown();
             }
             String stolenKey = ProductUtils.stolenKey(block, town);
-            String storage = Timer.lostProductTownMap.containsKey(stolenKey) ?
-                    (100 - configuration.getStealRate()) + "%" : 100 + "%";
-            String info = "%s--%s--%s--%s--%s".formatted(name, isPublic, coolDownState, storage, block.getDescription());
-            TextComponent component = Component.text(info).color(aPublic ? NamedTextColor.DARK_GREEN : NamedTextColor.GOLD);
+            String storage = Timer.lostProductTownMap.containsKey(stolenKey)
+                    ? (100 - configuration.getStealRate()) + "%"
+                    : 100 + "%";
+            String info = "%s--%s--%s--%s--%s".formatted(name, isPublic, coolDownState, storage,
+                    block.getDescription());
+            TextComponent component = Component.text(info)
+                    .color(aPublic ? NamedTextColor.DARK_GREEN : NamedTextColor.GOLD);
             body.add(component);
         }
         Messages.sendMessages(commandSender, Messages.buildProductScreen(body));
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command,
+            @NotNull String label, @NotNull String[] args) {
         boolean isAdmin = PermissionUtils.hasPermission((Player) commandSender, "towny.product.admin");
-        if(args.length == 1){
+        if (args.length == 1) {
             return isAdmin ? adminCommands : userCommands;
         }
-        if(args.length == 2){
+        if (args.length == 2) {
             String arg = args[1];
-            switch (arg){
-                case "admin" : {
-                    if(!isAdmin) return null;
+            switch (arg) {
+                case "admin": {
+                    if (!isAdmin)
+                        return null;
 
                 }
             }

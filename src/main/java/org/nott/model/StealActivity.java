@@ -1,6 +1,5 @@
 package org.nott.model;
 
-
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
@@ -43,8 +42,37 @@ public class StealActivity {
 
     private Integer outOfTownCount = 0;
 
+    private boolean isPause = false;
+
+    private Long pauseStartTime;
+
+    private Long pausedProgress;
+
     public void interrupt() {
         this.isInterrupt = true;
+    }
+
+    public void pause() {
+        this.isPause = true;
+        this.pauseStartTime = System.currentTimeMillis();
+        if (this.start != null) {
+            this.pausedProgress = System.currentTimeMillis() - this.start;
+        }
+    }
+
+    public void resume() {
+        this.isPause = false;
+        this.pauseStartTime = null;
+        this.start = System.currentTimeMillis() - (this.pausedProgress != null ? this.pausedProgress : 0);
+        this.pausedProgress = null;
+    }
+
+    public boolean isPauseTimeout() {
+        if (!isPause || pauseStartTime == null) {
+            return false;
+        }
+        long pauseDuration = System.currentTimeMillis() - pauseStartTime;
+        return pauseDuration >= 5 * 60 * 1000L;
     }
 
     public StealActivity() {
@@ -57,6 +85,9 @@ public class StealActivity {
         this.setThief(event.getThief());
         this.setStart(System.currentTimeMillis());
         this.setInTown(event.isStealWholeTownBlock());
+        this.isPause = false;
+        this.pauseStartTime = null;
+        this.pausedProgress = null;
     }
 
     public void checkThiefIfOut() {
@@ -65,42 +96,43 @@ public class StealActivity {
         SimpleTownyProduct instance = SimpleTownyProduct.INSTANCE;
         Configuration configuration = instance.getConfiguration();
         Message message = instance.getMessage();
-        if(inTown){
+        if (inTown) {
             Town town = townyAPI.getTown(location);
-            if(!targetTown.equals(town)){
+            if (!targetTown.equals(town)) {
                 countDownIfInterrupt(configuration, message);
-            }else {
+            } else {
                 this.setOutOfTownCount(0);
             }
-        }else {
+        } else {
             TownBlock block = townyAPI.getTownBlock(location);
             BaseBlock baseBlock = getBlocks().get(0);
-            if(block == null || !baseBlock.getName().equals(block.getTypeName())){
+            if (block == null || !baseBlock.getName().equals(block.getTypeName())) {
                 countDownIfInterrupt(configuration, message);
-            }else {
+            } else {
                 this.setOutOfTownCount(0);
             }
         }
     }
 
     private void countDownIfInterrupt(Configuration configuration, Message message) {
-        if(this.outOfTownCount <= configuration.getStealTempOutSecond()){
+        if (this.outOfTownCount <= configuration.getStealTempOutSecond()) {
             this.setOutOfTownCount(this.getOutOfTownCount() + 1);
             int time = configuration.getStealTempOutSecond() - this.outOfTownCount;
-            if(time > 0){
-                final Component subtitle = Component.text(message.getThiefOutTownWarning().formatted(time), NamedTextColor.GRAY);
-                Title title = Title.title(Component.empty(), subtitle, Title.Times.times(Duration.ofSeconds(1), Duration.ofSeconds(1), Duration.ofMillis(0)));
+            if (time > 0) {
+                final Component subtitle = Component.text(message.getThiefOutTownWarning().formatted(time),
+                        NamedTextColor.GRAY);
+                Title title = Title.title(Component.empty(), subtitle,
+                        Title.Times.times(Duration.ofSeconds(1), Duration.ofSeconds(1), Duration.ofMillis(0)));
                 thief.showTitle(title);
             }
-        }else {
+        } else {
             this.setInterrupt(true);
             this.setInterruptReason(message.getStealInterruptForOut());
         }
     }
 
-
     public void finish() {
-        if(this.isInterrupt){
+        if (this.isInterrupt) {
             SimpleTownyProduct.logger.info("activity isInterrupt");
             return;
         }
@@ -111,7 +143,8 @@ public class StealActivity {
         Timer.runningStealActivity.remove(thief.getUniqueId().toString());
         final Component mainTitle = Component.text(message.getStealSuccessTitle(), NamedTextColor.GREEN);
         final Component subtitle = Component.text(message.getStealSuccessSubTitle(), NamedTextColor.GREEN);
-        Title title = Title.title(mainTitle, subtitle, Title.Times.times(Duration.ofSeconds(3), Duration.ofSeconds(5), Duration.ofMillis(2)));
+        Title title = Title.title(mainTitle, subtitle,
+                Title.Times.times(Duration.ofSeconds(3), Duration.ofSeconds(5), Duration.ofMillis(2)));
         thief.showTitle(title);
         SimpleTownyProduct.logger.info("activity finish");
     }
