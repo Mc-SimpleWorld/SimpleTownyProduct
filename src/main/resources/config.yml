@@ -8,11 +8,12 @@
 #                    |_|                                 |___/
 # Config version: 0.0.1
 ## Productive configuration
-## 勿修改
+## 勿修改 Do not modify
 version: 0.0.1
 prefix: 'SimpleTownyProduct'
 
-# 语言zh_CN en_US
+# 语言
+# Current supported languages: zh_CN, en_US
 locale: 'zh_CN'
 
 ## 数据备份
@@ -42,15 +43,16 @@ gain_private_need_stand_in_town: true
 
 # 是否需要站在国家内获取产出【未启用】
 # if gain_need_stand_in_town is flase,wheather the player need to stand in the nation to doGain the block type
+# Currently, the nation system is not implemented, so this option is not enabled.
 gain_private_need_stand_in_nation: true
 
 # Need SiegeWar Plugins
 # 是否资源可被掠夺【未启用】
+# Currently, the plunder system is not implemented, so this option is not enabled.
 can_be_plundered: true
 # 掠夺启用时，可掠夺以后多少次的产出数量
 # if can_be_plundered is true, how many block types doGain times can be plundered in next.
 plunder_gain_times: 1
-
 
 # Other town can steal product
 # 资源是否可被偷窃
@@ -82,36 +84,49 @@ block_types:
   # All player can gain products from the public block types
   publics:
       # 区块的名字，必须唯一
+      # The name of the block type, must be unique.
     - name: '驿站'
       map_key: 'p'
       # 一个城镇可以拥有几个同类型区块
+      # How many same block types can a town have.
       limit_per_town: 1
       # 一个国家可以拥有几个同类型区块
+      # How many same block types can a nation have.
       same_nation_max: 2
       # 区块价格
+      # The price of the block type, which is the cost for a town to buy this block type.
       base_price: 1000
       # 区块出售[未启用]
+      # The sell price of the block type, which is the gain for a town to sell this block type. Currently, the selling system is not implemented, so this option is not enabled.
       base_sell_price: 500
-      # 区块资源基数
+      # 区块资源基数, 城镇等级提升区块资源的倍数计算公式：base_gain_number * (1 + town_level * town_level_exponent)
+      # The base gain number of the block type, which is the base number of products a town can gain from this block type. The actual gain number is calculated by the formula: base_gain_number * (1 + town_level * town_level_exponent).
       base_gain_number: 100
       # 根据城镇等级提升区块资源的倍数
+      # The exponent for the town level, which is used to calculate the actual gain number of the block type. The actual gain number is calculated by the formula: base_gain_number * (1 + town_level * town_level_exponent). For example, if the base_gain_number is 100, the town_level is 5, and the town_level_exponent is 0.3, then the actual gain number is 100 * (1 + 5 * 0.3) = 100 * (1 + 1.5) = 100 * 2.5 = 250.
       town_level_exponent: 0
       # 是否可设为出售[未启用]
+      # Whether the block type can be set for sale. If true, the town can sell this block type to other towns. Currently, the selling system is not implemented, so this option is not enabled.
       for_sale_able: false
       # 互斥区块类型
+      # Repel block types, which means that a town cannot have two block types that are mutually exclusive. For example, if block type A has block type B in its repel_block_type list, then a town cannot have both block type A and block type B at the same time.
       repel_block_type:
         - '驿站'
       # 是否可交易[未启用]
+      # Whether the block type can be traded. If true, the town can trade this block type with other towns. Currently, the trading system is not implemented, so this option is not enabled.
       trade_able: false
       # 产出冷却 冷却单位：s,min,hour,day,week
+      # Gain cool down, the unit of cool down can be s, min, hour, day, week.
       gain_cool_down: '1hour'
-      # 交易冷却
+      # 交易冷却 [未启用]
+      # Trade cool down, the unit of cool down can be s, min, hour, day, week. Currently, the trading system is not implemented, so this option is not enabled.
       trade_cool_down: '1day'
       description: '获取公共驿站资源'
       # 获取产出时实际执行的命令
       # [console] 以控制台身份执行
       # [player] 以玩家身份执行
       # 支持papi变量
+      # The command to execute when gaining products from this block type. The command can be executed as console or player, and can use papi variables. For example, if the gain_command is '[console]money grant %player_name% 100', then when a player gains products from this block type, the server will execute the command 'money grant <player_name> 100' as console, which will grant the player 100 money.
       gain_command:
         - '[console]money grant %player_name% 100'
   # Private block types
@@ -135,6 +150,10 @@ block_types:
       gain_command:
         - '[console]money grant %player_name% 100'
         - '[console]give %player_name% iron_ingot {{PRODUCT_NUMBER}}'
+      # 随机事件，随机事件有概率触发，触发后执行对应命令，命令中可以使用{{RANDOM_NUMBER}}变量，代表一个随机数，范围由第三个参数决定
+      # Random events, which have a chance to trigger. When triggered, the corresponding command is executed. The {{RANDOM_NUMBER}} variable can be used in the command, representing a random number within the range specified by the third parameter.
+      random_command:
+        - [ '0.3', '[console]give %player_name% diamond {{RANDOM_NUMBER}}', '1-10' ]
     - name: '魔法'
       map_key: 'm'
       limit_per_town: 1
@@ -152,22 +171,5 @@ block_types:
       description: '获取魔法资源'
       gain_command:
         - '[console]give %player_name% tnt {{PRODUCT_NUMBER}}'
-        - '[console]money grant %player_name% 100'
-        - '[console]give %player_name% tnt {{PRODUCT_NUMBER}}'
-
-# TODO 随机增减益事件
-#event_weeks_day:
-#event_time: '14:00'
-#events:
-#  # type1: 增益事件 2:减益事件 3：挑战事件
-#  - name: 'Good harvest'
-#    type: 1
-#    product_affect: 200%
-#    last_time: 2times
-#    probability: 5%
-#
-#  - name: 'Natural Disaster'
-#    type: 2
-#    product_affect: -50%
-#    last_time: 2hour
-#    probability: 8%
+      random_command:
+        - ['0.3', '[console]give %player_name% diamond {{RANDOM_NUMBER}}', '1-10']

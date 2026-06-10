@@ -133,6 +133,10 @@ public class ProductUtils {
                 blockTypes.getPublics().stream().anyMatch(block -> block.getName().equals(townBlock.getTypeName()));
     }
 
+    public static void executeCommand(Player player, String command) {
+        executeCommand(player, List.of(command));
+    }
+
     public static void executeCommand(Player player, List<String> command) {
         command.forEach(s -> {
             String realCommand = PlaceholderAPI.setPlaceholders(player, s);

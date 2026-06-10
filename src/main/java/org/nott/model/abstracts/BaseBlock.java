@@ -18,6 +18,8 @@ public abstract class BaseBlock {
 
     private List<String> gainCommand;
 
+    private List<List<String>> randomCommand;
+
     private String mapKey;
 
     private String name;

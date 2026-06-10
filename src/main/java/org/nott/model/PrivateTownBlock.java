@@ -57,16 +57,16 @@ public class PrivateTownBlock extends BaseBlock implements Product {
             return;
         }
 
-        if(gainPrivateNeedStandInTown){
-            if(!atTown.getName().equals(town.getName())){
+        if (gainPrivateNeedStandInTown) {
+            if (!atTown.getName().equals(town.getName())) {
                 SimpleTownyProduct.logger.log(Level.INFO, "Not in town. Skip.");
-                Messages.sendError(player,this.getName() + "-" + message.getMustStandInTown());
+                Messages.sendError(player, this.getName() + "-" + message.getMustStandInTown());
                 return;
             }
-        }else if(gainPrivateNeedStandInBlock){
-            if(townBlock == null || !townBlock.getType().getName().equals(this.getName())){
+        } else if (gainPrivateNeedStandInBlock) {
+            if (townBlock == null || !townBlock.getType().getName().equals(this.getName())) {
                 SimpleTownyProduct.logger.log(Level.INFO, "Not a Block. Skip.");
-                Messages.sendError(player,this.getName() + "-" + message.getMustStandInBlock());
+                Messages.sendError(player, this.getName() + "-" + message.getMustStandInBlock());
                 return;
             }
         } else {
@@ -84,6 +84,21 @@ public class PrivateTownBlock extends BaseBlock implements Product {
             BukkitTools.fireEvent(new PlotGainProductEvent(town, this, player));
             ProductUtils.addCoolDown(key, this);
             Timer.lostProductTownMap.remove(ProductUtils.stolenKey(this, town));
+            List<List<String>> randomCommand = this.getRandomCommand();
+            if(randomCommand != null && !randomCommand.isEmpty()){
+                for (List<String> commandList : randomCommand) {
+                    double pro = Double.parseDouble(commandList.get(0));
+                    if(Math.random() <= pro){
+                        String command = commandList.get(1);
+                        String[] numberRadio = commandList.get(2).split("-");
+                        int min = Integer.parseInt(numberRadio[0]);
+                        int max = Integer.parseInt(numberRadio[1]);
+                        int finalNumber = (int) (Math.random() * (max - min + 1) + min);
+                        command = command.replace("{{RANDOM_NUMBER}}", String.valueOf(finalNumber));
+                        ProductUtils.executeCommand(player, command);
+                    }
+                }
+            }
         } catch (ConfigWrongException e) {
             throw new RuntimeException(e);
         }
